@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Parametros Financieros - Mastitrack{% endblock %}
+
+{% block content %}
+<h2>Parametros Financieros</h2>
+<p class="text-muted">Ultima actualizacion: {{ params.fecha_actualizacion }}</p>
+
+{% if guardado %}
+<div class="alert alert-success">Parametros guardados correctamente.</div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="card mb-3">
+        <div class="card-header">Precios de Insumos de Ordeno</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="sellador_yodo_litro" class="form-label">Sellador yodo ($/litro)</label>
+                    <input type="number" name="sellador_yodo_litro" id="sellador_yodo_litro"
+                           class="form-control" step="0.01"
+                           value="{{ params.precios_insumos.sellador_yodo_litro }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="toallas_paquete" class="form-label">Toallas ($/paquete)</label>
+                    <input type="number" name="toallas_paquete" id="toallas_paquete"
+                           class="form-control" step="0.01"
+                           value="{{ params.precios_insumos.toallas_paquete }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="prueba_cmt" class="form-label">Prueba CMT ($/unidad)</label>
+                    <input type="number" name="prueba_cmt" id="prueba_cmt"
+                           class="form-control" step="0.01"
+                           value="{{ params.precios_insumos.prueba_cmt }}">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">Costos de Reaccion</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="precio_promedio_antibiotico" class="form-label">Antibiotico promedio ($)</label>
+                    <input type="number" name="precio_promedio_antibiotico" id="precio_promedio_antibiotico"
+                           class="form-control" step="0.01"
+                           value="{{ params.costos_reaccion.precio_promedio_antibiotico }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="costo_promedio_consulta_vet" class="form-label">Consulta veterinaria ($)</label>
+                    <input type="number" name="costo_promedio_consulta_vet" id="costo_promedio_consulta_vet"
+                           class="form-control" step="0.01"
+                           value="{{ params.costos_reaccion.costo_promedio_consulta_vet }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="costo_reemplazo_vaca" class="form-label">Reemplazo de vaca ($)</label>
+                    <input type="number" name="costo_reemplazo_vaca" id="costo_reemplazo_vaca"
+                           class="form-control" step="0.01"
+                           value="{{ params.costos_reaccion.costo_reemplazo_vaca }}">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">Valor de Produccion</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="precio_venta_litro_leche" class="form-label">Precio venta litro leche ($)</label>
+                    <input type="number" name="precio_venta_litro_leche" id="precio_venta_litro_leche"
+                           class="form-control" step="0.01"
+                           value="{{ params.valor_produccion.precio_venta_litro_leche }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="produccion_promedio_vaca_dia" class="form-label">Produccion promedio vaca/dia (litros)</label>
+                    <input type="number" name="produccion_promedio_vaca_dia" id="produccion_promedio_vaca_dia"
+                           class="form-control" step="0.1"
+                           value="{{ params.valor_produccion.produccion_promedio_vaca_dia }}">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar Parametros</button>
+</form>
+{% endblock %}

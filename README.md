@@ -1,99 +1,97 @@
-# Mastitrack
+# MastitisApp
 
-Aplicación web monolítica en Django para la gestión y prevención de mastitis bovina.
+Aplicacion web monolitica en Django para la gestion y prevencion de mastitis bovina. 
+Proyecto integrador semestral que sintetiza contenidos de Bases de Datos NoSQL, Inteligencia Artificial, Ecuaciones Diferenciales, Finanzas Corporativas, Estadistica Multivariada y Criptografia.
 
-Este repositorio corresponde a un proyecto integrador semestral que sintetiza contenidos de Bases de Datos NoSQL, Inteligencia Artificial, Ecuaciones Diferenciales, Finanzas Corporativas, Estadística Multivariada y Criptografía.
+## Modulos
 
-## Objetivo general
+- **Semaforo de riesgo**: evalua la probabilidad de mastitis por vaca usando una red neuronal con salida sigmoide. Clasifica en verde, amarillo o rojo.
+- **Bitacora de ordeno**: registro paso a paso del proceso de ordeno con calculo automatico de metricas de cumplimiento y captura de datos de sensores de leche.
+- **Calculadora de perdidas y ROI**: simulacion de perdidas proyectadas, comparativo prevencion vs reaccion y calculo de retorno de inversion. Los calculos se ejecutan en Django y se consumen via AJAX.
 
-Diseñar una plataforma simple y funcional para registrar información sanitaria y operativa del hato, evaluar riesgo de mastitis y estimar pérdidas económicas asociadas a la prevención o reacción ante alertas.
+## Stack
 
-## Módulos planeados
-
-- **Semáforo de riesgo**: evaluación de la probabilidad de mastitis por vaca usando una red neuronal con salida sigmoide. El resultado se clasificará en verde, amarillo o rojo.
-- **Bitácora de ordeño**: registro paso a paso del proceso de ordeño con cálculo de métricas de cumplimiento y captura de datos de sensores de leche.
-- **Calculadora de pérdidas y ROI**: simulación de pérdidas proyectadas, comparativo prevención vs reacción y cálculo de retorno de inversión. Los cálculos se ejecutarán en Django y se consumirán vía AJAX.
-
-## Stack previsto
-
-| Componente   | Tecnología                    |
-|--------------|-------------------------------|
-| Backend      | Django |
-| Base de datos del dominio | MongoDB |
-| Autenticación | SQLite / auth de Django |
-| Frontend     | Django Templates |
-| Gráficos     | Chart.js |
-| Cifrado      | Fernet (cryptography) |
-| Herramientas de entorno | uv |
-
-## Estado del proyecto
-
-Inicio del desarrollo.
-
-Todavía no se han implementado los módulos funcionales; este repositorio solo contiene la base inicial del proyecto.
+| Componente   | Tecnologia                     |
+|--------------|--------------------------------|
+| Backend      | Django 4.2                     |
+| BD dominio   | MongoDB (MongoEngine)          |
+| BD auth      | SQLite (django.contrib.auth)   |
+| Frontend     | Django Templates + Bootstrap 5 |
+| Graficos     | Chart.js                       |
+| Cifrado      | Fernet (cryptography)          |
+| Inferencia   | NumPy                          |
 
 ## Requisitos previos
 
 - Python 3.10+
-- MongoDB 6.0+ local o MongoDB Atlas
-- uv
+- MongoDB 6.0+ (local o Atlas)
+- [uv](https://docs.astral.sh/uv/)
 
-## Instalación local
+## Instalacion
 
 ```bash
-# Crear entorno virtual
-uv venv
-
-# Activar entorno virtual
-source .venv/bin/activate
-
-# Instalar dependencias
+# Crear entorno virtual e instalar dependencias
+uv venv mastitisvenv
+source mastitisvenv/bin/activate
 uv pip install -r requirements.txt
-```
 
-## Configuración
-
-Crear un archivo `.env` a partir del ejemplo:
-
-```bash
+# Configurar variables de entorno
 cp .env.example .env
+# Editar .env con tus valores (MONGODB_URI, DJANGO_SECRET_KEY, FERNET_KEY)
+
+# Migrar SQLite (autenticacion)
+uv run manage.py migrate
+
+# Crear superusuario
+uv run manage.py createsuperuser
+
+# Crear grupos de usuario
+uv run manage.py shell -c "
+from django.contrib.auth.models import Group
+Group.objects.get_or_create(name='administrador')
+Group.objects.get_or_create(name='operador')
+"
+
+# Iniciar servidor
+uv run manage.py runserver
 ```
 
-Variables esperadas:
+## Uso
 
-- `DJANGO_SECRET_KEY`
-- `DJANGO_DEBUG`
-- `DJANGO_ALLOWED_HOSTS`
-- `MONGODB_URI`
-- `FERNET_KEY`
+1. Acceder a `http://localhost:8000/`
+2. Iniciar sesion con el superusuario creado
+3. Desde el admin de Django (`/admin/`), asignar usuarios a los grupos `administrador` u `operador`
 
-## Siguientes pasos
+### Permisos por rol
 
-- Crear la estructura base del proyecto Django.
-- Definir las apps principales del sistema.
-- Configurar la conexión con MongoDB.
-- Preparar el panel administrativo.
-- Implementar los modelos y vistas iniciales.
+| Rol           | Acceso                                                           |
+|---------------|------------------------------------------------------------------|
+| Administrador | Vacas (CRUD), Semaforo, Calculadora, Parametros financieros      |
+| Operador      | Vacas (lectura), Bitacora de ordeno, Dashboard general           |
 
-## Estructura esperada
+## Estructura del proyecto
 
-```text
+```
 pp-mastitis/
-├── mastitis_project/
-├── core/
-├── vacas/
-├── bitacora/
-├── semaforo/
-├── calculadora/
-├── templates/
-├── static/
-└── docs/
+├── mastitis_project/   # Configuracion Django
+├── core/               # Utilidades: crypto, context processors, dashboard
+├── vacas/              # Gestion de vacas y visitas veterinarias
+├── bitacora/           # Bitacora de ordeno y sensores de leche
+├── semaforo/           # Semaforo de riesgo (inferencia NN)
+├── calculadora/        # Calculadora ROI y parametros financieros
+├── templates/          # Templates HTML
+├── static/             # CSS y JS
+└── docs/               # Documentacion de arquitectura
 ```
 
-## Documentación
+Ver [docs/architecture.md](docs/architecture.md) para documentacion detallada.
 
-La documentación técnica y de arquitectura se irá agregando progresivamente en la carpeta `docs/`.
+## Variables de entorno
 
-## Licencia
-
-Proyecto académico. Uso interno para fines universitarios.
+| Variable             | Descripcion                          | Ejemplo                                    |
+|----------------------|--------------------------------------|--------------------------------------------|
+| DJANGO_SECRET_KEY    | Clave secreta de Django              | (generada automaticamente)                 |
+| DJANGO_DEBUG         | Modo debug                           | True                                       |
+| DJANGO_ALLOWED_HOSTS | Hosts permitidos separados por coma  | localhost,127.0.0.1                        |
+| MONGODB_URI          | URI de conexion a MongoDB            | mongodb://localhost:27017/mastitis_db       |
+| FERNET_KEY           | Clave Fernet para cifrado            | (generada automaticamente)                 |

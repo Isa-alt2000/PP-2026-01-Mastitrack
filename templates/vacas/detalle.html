@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}{{ vaca.nombre }} - Mastitrack{% endblock %}
+
+{% block content %}
+<h2>{{ vaca.arete }} - {{ vaca.nombre }}</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <p><strong>Lote:</strong> {{ vaca.lote }}</p>
+                <p><strong>Edad:</strong> {{ vaca.edad_display }}</p>
+                <p><strong>Estado:</strong>
+                    <span class="badge bg-{% if vaca.estado_salud == 'Sano' %}success{% elif vaca.estado_salud == 'Observacion' %}warning{% elif vaca.estado_salud == 'Aislado' %}danger{% else %}info{% endif %}">
+                        {{ vaca.estado_salud }}
+                    </span>
+                </p>
+                {% if vaca.fecha_aislamiento %}
+                <p><strong>Fecha aislamiento:</strong> {{ vaca.fecha_aislamiento }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex flex-column gap-2">
+            {% if es_admin %}
+            <a href="{% url 'vacas:crear_visita' vaca.id %}" class="btn btn-outline-primary">Registrar Visita Veterinaria</a>
+            <a href="{% url 'semaforo:evaluar' vaca.id %}" class="btn btn-outline-warning" id="btn-evaluar">Evaluar Riesgo</a>
+            <a href="{% url 'semaforo:historial' vaca.id %}" class="btn btn-outline-secondary">Historial de Riesgo</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if visitas %}
+<h4>Visitas Veterinarias</h4>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Tratamiento</th>
+            <th>Observaciones</th>
+            {% if es_admin %}<th>Costo</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for visita in visitas %}
+        <tr>
+            <td>{{ visita.fecha_visita }}</td>
+            <td>{{ visita.tipo_consulta }}</td>
+            <td>{% if visita.aplica_tratamiento %}{{ visita.tratamiento }}{% else %}-{% endif %}</td>
+            <td>{{ visita.observaciones }}</td>
+            {% if es_admin %}<td>{{ visita.get_costo|moneda }}</td>{% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

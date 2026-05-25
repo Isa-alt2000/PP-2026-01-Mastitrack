@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Calculadora de Perdidas - Mastitrack{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Calculadora de Perdidas y ROI</h2>
+
+<!-- Sliders de parametros -->
+<div class="card mb-4">
+    <div class="card-header">Parametros de Simulacion</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="slider-dias" class="form-label">Dias sin atencion: <strong id="val-dias">7</strong></label>
+                <input type="range" class="form-range" id="slider-dias" min="1" max="30" value="7">
+            </div>
+            <div class="col-md-4">
+                <label for="slider-vacas" class="form-label">Vacas afectadas: <strong id="val-vacas">3</strong></label>
+                <input type="range" class="form-range" id="slider-vacas" min="1" max="50" value="3">
+            </div>
+            <div class="col-md-4">
+                <label for="slider-total" class="form-label">Total del hato: <strong id="val-total">50</strong></label>
+                <input type="range" class="form-range" id="slider-total" min="10" max="200" value="50">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tarjetas de resultados -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card card-stat-danger">
+            <div class="card-body text-center">
+                <h6>Perdida Proyectada</h6>
+                <p class="display-6 text-mt-primary" id="tarjeta-perdida">$0.00</p>
+                <small class="text-muted" id="tarjeta-litros">0 litros descartados</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stat-warning">
+            <div class="card-body text-center">
+                <h6>Costo de Reaccion</h6>
+                <p class="display-6 text-mt-gold" id="tarjeta-reaccion">$0.00</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stat-success">
+            <div class="card-body text-center">
+                <h6>ROI de Prevencion</h6>
+                <p class="display-6 text-mt-green" id="tarjeta-roi">0%</p>
+                <small class="text-muted" id="tarjeta-ahorro">Ahorro: $0.00</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Graficos -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Proyeccion de Contagios (Ec. Diferenciales)</div>
+            <div class="card-body">
+                <canvas id="grafico-contagios"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Prevencion vs Reaccion (Finanzas)</div>
+            <div class="card-body">
+                <canvas id="grafico-pvr"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const sliderDias = document.getElementById('slider-dias');
+const sliderVacas = document.getElementById('slider-vacas');
+const sliderTotal = document.getElementById('slider-total');
+
+let chartContagios = null;
+let chartPVR = null;
+
+function actualizarValores() {
+    document.getElementById('val-dias').textContent = sliderDias.value;
+    document.getElementById('val-vacas').textContent = sliderVacas.value;
+    document.getElementById('val-total').textContent = sliderTotal.value;
+}
+
+function cargarDatos() {
+    const dias = sliderDias.value;
+    const vacas = sliderVacas.value;
+    const total = sliderTotal.value;
+
+    fetch(`/calculadora/api/perdida/?dias=${dias}&vacas=${vacas}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('tarjeta-perdida').textContent = `$${data.perdida_leche.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+            document.getElementById('tarjeta-litros').textContent = `${data.litros_descartados.toLocaleString()} litros descartados`;
+        });
+
+    fetch(`/calculadora/api/roi/?vacas_total=${total}&vacas_enfermas=${vacas}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('tarjeta-reaccion').textContent = `$${data.reaccion.total_reaccion.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+            document.getElementById('tarjeta-roi').textContent = `${data.roi_porcentaje.toFixed(1)}%`;
+            document.getElementById('tarjeta-ahorro').textContent = `Ahorro: $${data.ahorro_estimado.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+        });
+
+    fetch(`/calculadora/api/proyeccion/?infectadas=${vacas}&dias=${dias}`)
+        .then(r => r.json())
+        .then(data => {
+            const labels = data.proyeccion.map(p => `Dia ${p.dia}`);
+            const valores = data.proyeccion.map(p => p.infectadas);
+            if (chartContagios) chartContagios.destroy();
+            chartContagios = new Chart(document.getElementById('grafico-contagios'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Vacas infectadas',
+                        data: valores,
+                        borderColor: '#9F2241',
+                        backgroundColor: 'rgba(159,34,65,0.1)',
+                        fill: true,
+                    }]
+                },
+                options: { responsive: true }
+            });
+        });
+
+    fetch(`/calculadora/api/prevencion-vs-reaccion/?vacas_total=${total}&vacas_enfermas=${vacas}`)
+        .then(r => r.json())
+        .then(data => {
+            if (chartPVR) chartPVR.destroy();
+            chartPVR = new Chart(document.getElementById('grafico-pvr'), {
+                type: 'bar',
+                data: {
+                    labels: ['Prevencion', 'Reaccion'],
+                    datasets: [{
+                        label: 'Costo ($)',
+                        data: [data.prevencion.total_prevencion, data.reaccion.total_reaccion],
+                        backgroundColor: ['#235B4E', '#9F2241'],
+                    }]
+                },
+                options: { responsive: true }
+            });
+        });
+}
+
+sliderDias.addEventListener('input', () => { actualizarValores(); cargarDatos(); });
+sliderVacas.addEventListener('input', () => { actualizarValores(); cargarDatos(); });
+sliderTotal.addEventListener('input', () => { actualizarValores(); cargarDatos(); });
+
+cargarDatos();
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+[project]
+name = "pp-mastitis"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography==44.0.0",
+    "django==4.2.17",
+    "mongoengine==0.29.1",
+    "numpy==1.26.4",
+    "python-dotenv==1.1.0",
+]

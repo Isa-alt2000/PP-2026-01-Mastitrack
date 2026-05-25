@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Historial de Riesgo - {{ vaca.arete }}{% endblock %}
+
+{% block content %}
+<h2>Historial de Riesgo - {{ vaca.arete }} ({{ vaca.nombre }})</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Probabilidad</th>
+            <th>Nivel</th>
+            <th>Modelo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in registros %}
+        <tr>
+            <td>{{ r.fecha_evaluacion }}</td>
+            <td>{{ r.probabilidad_riesgo|porcentaje }}</td>
+            <td>
+                <span class="badge" style="background-color: {{ r.nivel_alerta|color_alerta }}">
+                    {{ r.nivel_alerta|upper }}
+                </span>
+            </td>
+            <td>{{ r.version_modelo }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center">Sin evaluaciones registradas.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'semaforo:panel' %}" class="btn btn-secondary">Volver al Semaforo</a>
+{% endblock %}

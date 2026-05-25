@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Semaforo de Riesgo - Mastitrack{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Semaforo de Riesgo de Mastitis</h2>
+
+<div class="row">
+    {% for vaca in vacas %}
+    <div class="col-md-3 mb-3">
+        {% with riesgo=riesgos|dictsort:vaca.id %}
+        <div class="card semaforo-card">
+            <div class="card-body text-center">
+                <h6>{{ vaca.arete }}</h6>
+                <p class="text-muted small">{{ vaca.nombre }}</p>
+
+                {% if riesgos %}
+                {% with r=riesgos|default_if_none:"" %}
+                {% endwith %}
+                {% endif %}
+
+                <div class="semaforo-indicador mb-2" id="indicador-{{ vaca.id }}">
+                    <span class="badge bg-secondary">Sin evaluar</span>
+                </div>
+
+                <button class="btn btn-sm btn-outline-primary"
+                        onclick="evaluarRiesgo('{{ vaca.id }}')">
+                    Evaluar
+                </button>
+                <a href="{% url 'semaforo:historial' vaca.id %}" class="btn btn-sm btn-outline-secondary">
+                    Historial
+                </a>
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function evaluarRiesgo(vacaId) {
+    fetch(`/semaforo/evaluar/${vacaId}/`)
+        .then(response => response.json())
+        .then(data => {
+            const indicador = document.getElementById(`indicador-${vacaId}`);
+            if (data.error) {
+                indicador.innerHTML = `<span class="badge bg-secondary">${data.error}</span>`;
+                return;
+            }
+            const colores = {verde: '#009288', amarillo: '#BC955C', rojo: '#9F2241'};
+            const color = colores[data.nivel_alerta] || '#98989A';
+            const prob = (data.probabilidad * 100).toFixed(1);
+            indicador.innerHTML = `<span class="badge" style="background-color:${color}">${data.nivel_alerta.toUpperCase()} ${prob}%</span>`;
+        });
+}
+</script>
+{% endblock %}

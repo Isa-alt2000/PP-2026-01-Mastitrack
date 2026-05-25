@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Ordeno - Mastitrack{% endblock %}
+
+{% block content %}
+<h2>Registrar Ordeno</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="vaca_id" class="form-label">Vaca</label>
+                <select name="vaca_id" id="vaca_id" class="form-select" required>
+                    <option value="">Seleccionar vaca...</option>
+                    {% for vaca in vacas %}
+                    <option value="{{ vaca.id }}">{{ vaca.arete }} - {{ vaca.nombre }} ({{ vaca.lote }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">Pre-Ordeno</div>
+                <div class="card-body">
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="lavado_manos" id="lavado_manos" class="form-check-input">
+                        <label for="lavado_manos" class="form-check-label">Lavado de manos</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="despunte_primeros_chorros" id="despunte_primeros_chorros" class="form-check-input">
+                        <label for="despunte_primeros_chorros" class="form-check-label">Despunte primeros chorros</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="sellado_yodo" id="sellado_yodo" class="form-check-input">
+                        <label for="sellado_yodo" class="form-check-label">Sellado con yodo</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="secado_toalla_limpia" id="secado_toalla_limpia" class="form-check-input">
+                        <label for="secado_toalla_limpia" class="form-check-label">Secado con toalla limpia</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">Medicion / Ordeno</div>
+                <div class="card-body">
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="colocacion_pezoneras" id="colocacion_pezoneras" class="form-check-input">
+                        <label for="colocacion_pezoneras" class="form-check-label">Colocacion de pezoneras</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="verificar_vacio" id="verificar_vacio" class="form-check-input">
+                        <label for="verificar_vacio" class="form-check-label">Verificar vacio</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="retirar_pezoneras" id="retirar_pezoneras" class="form-check-input">
+                        <label for="retirar_pezoneras" class="form-check-label">Retirar pezoneras</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">Post-Ordeno</div>
+                <div class="card-body">
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="sellado_post_ordeno" id="sellado_post_ordeno" class="form-check-input">
+                        <label for="sellado_post_ordeno" class="form-check-label">Sellado post-ordeno</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="limpieza_cip" id="limpieza_cip" class="form-check-input">
+                        <label for="limpieza_cip" class="form-check-label">Limpieza CIP</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="registro_temp_tanque" id="registro_temp_tanque" class="form-check-input">
+                        <label for="registro_temp_tanque" class="form-check-label">Registro temperatura tanque</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="firma_operador" id="firma_operador" class="form-check-input">
+                        <label for="firma_operador" class="form-check-label">Firma del operador</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar Ordeno</button>
+            <a href="{% url 'bitacora:lista' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Visita Veterinaria - Mastitrack{% endblock %}
+
+{% block content %}
+<h2>Registrar Visita Veterinaria - {{ vaca.arete }}</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="fecha_visita" class="form-label">Fecha</label>
+                <input type="date" name="fecha_visita" id="fecha_visita" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="tipo_consulta" class="form-label">Tipo de Consulta</label>
+                <select name="tipo_consulta" id="tipo_consulta" class="form-select">
+                    <option value="Rutinaria">Rutinaria</option>
+                    <option value="Emergencia">Emergencia</option>
+                    <option value="Seguimiento">Seguimiento</option>
+                </select>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="aplica_tratamiento" id="aplica_tratamiento" class="form-check-input">
+                <label for="aplica_tratamiento" class="form-check-label">Aplica tratamiento</label>
+            </div>
+            <div class="mb-3">
+                <label for="tratamiento" class="form-label">Tratamiento / Medicamento</label>
+                <input type="text" name="tratamiento" id="tratamiento" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="observaciones" class="form-label">Observaciones</label>
+                <textarea name="observaciones" id="observaciones" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="costo_total" class="form-label">Costo Total ($)</label>
+                <input type="number" name="costo_total" id="costo_total" class="form-control" step="0.01">
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{% url 'vacas:detalle' vaca.id %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Sensor - Mastitrack{% endblock %}
+
+{% block content %}
+<h2>Registrar Datos de Sensor - {{ bitacora.vaca.arete }}</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="conteo_celulas_somaticas" class="form-label">Conteo Celulas Somaticas (CCS)</label>
+                <input type="number" name="conteo_celulas_somaticas" id="conteo_celulas_somaticas" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="ph" class="form-label">pH</label>
+                <input type="number" name="ph" id="ph" class="form-control" step="0.01" value="6.80" required>
+            </div>
+            <div class="mb-3">
+                <label for="temperatura" class="form-label">Temperatura (C)</label>
+                <input type="number" name="temperatura" id="temperatura" class="form-control" step="0.1" value="38.5" required>
+            </div>
+            <div class="mb-3">
+                <label for="conductividad_electrica" class="form-label">Conductividad Electrica (mS/cm)</label>
+                <input type="number" name="conductividad_electrica" id="conductividad_electrica" class="form-control" step="0.1" value="5.0" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{% url 'bitacora:detalle' bitacora.id %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

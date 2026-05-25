@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Vacas - Mastitrack{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Registro de Vacas</h2>
+    {% if es_admin %}
+    <a href="{% url 'vacas:crear' %}" class="btn btn-primary">Registrar Vaca</a>
+    {% endif %}
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="get" class="d-flex gap-2">
+            <select name="lote" class="form-select">
+                <option value="">Todos los lotes</option>
+                {% for l in lotes %}
+                <option value="{{ l }}" {% if filtro_lote == l %}selected{% endif %}>{{ l }}</option>
+                {% endfor %}
+            </select>
+            <select name="estado" class="form-select">
+                <option value="">Todos los estados</option>
+                <option value="Sano" {% if filtro_estado == "Sano" %}selected{% endif %}>Sano</option>
+                <option value="Observacion" {% if filtro_estado == "Observacion" %}selected{% endif %}>Observacion</option>
+                <option value="Aislado" {% if filtro_estado == "Aislado" %}selected{% endif %}>Aislado</option>
+                <option value="Tratamiento" {% if filtro_estado == "Tratamiento" %}selected{% endif %}>Tratamiento</option>
+            </select>
+            <button type="submit" class="btn btn-outline-secondary">Filtrar</button>
+        </form>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Arete</th>
+            <th>Nombre</th>
+            <th>Lote</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for vaca in vacas %}
+        <tr>
+            <td>{{ vaca.arete }}</td>
+            <td>{{ vaca.nombre }}</td>
+            <td>{{ vaca.lote }}</td>
+            <td>
+                <span class="badge bg-{% if vaca.estado_salud == 'Sano' %}success{% elif vaca.estado_salud == 'Observacion' %}warning{% elif vaca.estado_salud == 'Aislado' %}danger{% else %}info{% endif %}">
+                    {{ vaca.estado_salud }}
+                </span>
+            </td>
+            <td>
+                <a href="{% url 'vacas:detalle' vaca.id %}" class="btn btn-sm btn-outline-primary">Ver</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center">No hay vacas registradas.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

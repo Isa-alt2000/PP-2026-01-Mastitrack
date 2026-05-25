@@ -1,0 +1,239 @@
+:root {
+    --mt-primary: #9F2241;
+    --mt-primary-dark: #691C32;
+    --mt-gold: #BC955C;
+    --mt-gold-light: #DDC9A3;
+    --mt-gray: #98989A;
+    --mt-gray-dark: #6F7271;
+    --mt-green-dark: #235B4E;
+    --mt-green: #009288;
+    --mt-green-deep: #10312B;
+}
+
+body {
+    background-color: #f5f3f0;
+    color: #333;
+}
+
+/* --- Navbar --- */
+.navbar-mastitrack {
+    background-color: var(--mt-primary-dark);
+}
+
+.navbar-mastitrack .navbar-brand {
+    font-weight: bold;
+    color: var(--mt-gold) !important;
+}
+
+.navbar-mastitrack .nav-link {
+    color: var(--mt-gold-light) !important;
+}
+
+.navbar-mastitrack .nav-link:hover,
+.navbar-mastitrack .nav-link:focus {
+    color: #fff !important;
+}
+
+.navbar-mastitrack .nav-link.active {
+    color: #fff !important;
+    border-bottom: 2px solid var(--mt-gold);
+}
+
+.navbar-mastitrack .navbar-toggler {
+    border-color: var(--mt-gold);
+}
+
+.navbar-mastitrack .navbar-toggler-icon {
+    filter: brightness(2);
+}
+
+.navbar-mastitrack .nav-user {
+    color: var(--mt-gray) !important;
+    font-size: 0.9em;
+}
+
+.navbar-logo {
+    height: 36px;
+    margin-right: 10px;
+}
+
+/* --- Botones --- */
+.btn-primary {
+    background-color: var(--mt-primary) !important;
+    border-color: var(--mt-primary) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--mt-primary-dark) !important;
+    border-color: var(--mt-primary-dark) !important;
+}
+
+.btn-outline-primary {
+    color: var(--mt-primary) !important;
+    border-color: var(--mt-primary) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--mt-primary) !important;
+    color: #fff !important;
+}
+
+/* --- Tarjetas --- */
+.card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.card-stat-danger {
+    border-left: 4px solid var(--mt-primary);
+}
+
+.card-stat-warning {
+    border-left: 4px solid var(--mt-gold);
+}
+
+.card-stat-success {
+    border-left: 4px solid var(--mt-green);
+}
+
+.card-stat-info {
+    border-left: 4px solid var(--mt-green-dark);
+}
+
+.card-verde {
+    background-color: var(--mt-green-dark);
+    color: #fff;
+}
+
+.card-verde .display-6 {
+    color: #fff;
+}
+
+.card-teal {
+    background-color: var(--mt-green);
+    color: #fff;
+}
+
+.card-teal .display-6 {
+    color: #fff;
+}
+
+.card-deep {
+    background-color: var(--mt-green-deep);
+    color: #fff;
+}
+
+.card-deep .display-6 {
+    color: #fff;
+}
+
+/* --- Textos con paleta --- */
+.text-mt-primary {
+    color: var(--mt-primary) !important;
+}
+
+.text-mt-gold {
+    color: var(--mt-gold) !important;
+}
+
+.text-mt-green {
+    color: var(--mt-green) !important;
+}
+
+.text-mt-green-dark {
+    color: var(--mt-green-dark) !important;
+}
+
+/* --- Badges de alerta (semaforo) --- */
+.badge-verde {
+    background-color: var(--mt-green) !important;
+}
+
+.badge-amarillo {
+    background-color: var(--mt-gold) !important;
+    color: #333 !important;
+}
+
+.badge-rojo {
+    background-color: var(--mt-primary) !important;
+}
+
+/* --- Semaforo cards --- */
+.semaforo-card {
+    transition: transform 0.2s;
+}
+
+.semaforo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(159, 34, 65, 0.15);
+}
+
+/* --- Progress bars --- */
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar.bg-success {
+    background-color: var(--mt-green) !important;
+}
+
+.progress-bar.bg-warning {
+    background-color: var(--mt-gold) !important;
+}
+
+.progress-bar.bg-danger {
+    background-color: var(--mt-primary) !important;
+}
+
+/* --- Formularios --- */
+.form-range {
+    cursor: pointer;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--mt-gold);
+    box-shadow: 0 0 0 0.2rem rgba(188, 149, 92, 0.25);
+}
+
+/* --- Login --- */
+.login-card {
+    border-top: 4px solid var(--mt-primary);
+}
+
+.login-brand {
+    color: var(--mt-primary);
+    font-weight: 700;
+}
+
+/* --- Tablas --- */
+.table thead th {
+    background-color: var(--mt-primary-dark);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+}
+
+/* --- General --- */
+.display-6 {
+    font-weight: 600;
+}
+
+a {
+    color: var(--mt-primary);
+}
+
+a:hover {
+    color: var(--mt-primary-dark);
+}
+
+/* --- Footer --- */
+.footer-mastitrack {
+    background-color: var(--mt-green-deep);
+    color: var(--mt-gold-light);
+    font-size: 0.85em;
+}

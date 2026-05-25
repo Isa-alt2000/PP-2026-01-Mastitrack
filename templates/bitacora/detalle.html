@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Ordeno {{ bitacora.vaca.arete }} - Mastitrack{% endblock %}
+
+{% block content %}
+<h2>Detalle de Ordeno - {{ bitacora.vaca.arete }}</h2>
+<p class="text-muted">{{ bitacora.fecha_ordeno }}</p>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Metricas</div>
+            <div class="card-body">
+                {% if bitacora.metricas %}
+                <p><strong>Pasos cumplidos:</strong> {{ bitacora.metricas.pasos_cumplidos }} / {{ bitacora.metricas.pasos_totales }}</p>
+                <p><strong>Cumplimiento:</strong> {{ bitacora.metricas.porcentaje_cumplimiento }}%</p>
+                <p><strong>Fallas criticas:</strong> {{ bitacora.metricas.fallas_criticas }}</p>
+                <p><strong>Completa:</strong> {% if bitacora.metricas.bitacora_completa %}Si{% else %}No{% endif %}</p>
+                {% else %}
+                <p>Sin metricas calculadas.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Datos de Sensor</div>
+            <div class="card-body">
+                {% if sensor %}
+                <p><strong>CCS:</strong> {{ sensor.conteo_celulas_somaticas }}</p>
+                <p><strong>pH:</strong> {{ sensor.ph }}</p>
+                <p><strong>Temperatura:</strong> {{ sensor.temperatura }} C</p>
+                <p><strong>Conductividad:</strong> {{ sensor.conductividad_electrica }} mS/cm</p>
+                {% else %}
+                <p>Sin datos de sensor.</p>
+                <a href="{% url 'bitacora:registrar_sensor' bitacora.id %}" class="btn btn-sm btn-outline-primary">Registrar Sensor</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Pasos del Ordeno</div>
+            <div class="card-body" style="font-size: 0.9em;">
+                {% for fase, pasos in bitacora.ordeno.items %}
+                <strong>{{ fase }}</strong>
+                <ul class="list-unstyled ms-2 mb-2">
+                    {% for paso, valor in pasos.items %}
+                    {% if paso != "fecha_pre" and paso != "fecha_med" and paso != "fecha_post" %}
+                    <li>{% if valor %}[x]{% else %}[ ]{% endif %} {{ paso }}</li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="{% url 'bitacora:lista' %}" class="btn btn-secondary">Volver</a>
+{% endblock %}

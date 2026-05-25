@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Vaca - Mastitrack{% endblock %}
+
+{% block content %}
+<h2>Registrar Vaca</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="arete" class="form-label">Arete</label>
+                <input type="text" name="arete" id="arete" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" name="nombre" id="nombre" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="lote" class="form-label">Lote</label>
+                <input type="text" name="lote" id="lote" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="estado_salud" class="form-label">Estado de Salud</label>
+                <select name="estado_salud" id="estado_salud" class="form-select">
+                    <option value="Sano">Sano</option>
+                    <option value="Observacion">Observacion</option>
+                    <option value="Aislado">Aislado</option>
+                    <option value="Tratamiento">Tratamiento</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{% url 'vacas:lista' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

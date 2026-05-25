@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Dashboard - Mastitrack{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Panel General</h2>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center card-stat-info">
+            <div class="card-body">
+                <h5 class="card-title">Total Vacas</h5>
+                <p class="display-6 text-mt-green-dark">{{ total_vacas }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center card-stat-warning">
+            <div class="card-body">
+                <h5 class="card-title">Aisladas</h5>
+                <p class="display-6 text-mt-gold">{{ vacas_aisladas }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center card-stat-success">
+            <div class="card-body">
+                <h5 class="card-title">En Tratamiento</h5>
+                <p class="display-6 text-mt-green">{{ vacas_tratamiento }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center card-stat-danger">
+            <div class="card-body">
+                <h5 class="card-title">Alertas Rojas</h5>
+                <p class="display-6 text-mt-primary">{{ alertas_rojas }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if es_admin and ultimos_riesgos %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Ultimas Evaluaciones de Riesgo</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Vaca</th>
+                    <th>Probabilidad</th>
+                    <th>Nivel</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in ultimos_riesgos %}
+                <tr>
+                    <td>{{ r.vaca.arete }}</td>
+                    <td>{{ r.probabilidad_riesgo|porcentaje }}</td>
+                    <td>
+                        <span class="badge" style="background-color: {{ r.nivel_alerta|color_alerta }}">
+                            {{ r.nivel_alerta|upper }}
+                        </span>
+                    </td>
+                    <td>{{ r.fecha_evaluacion }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
