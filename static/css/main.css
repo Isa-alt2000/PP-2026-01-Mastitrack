@@ -267,3 +267,18 @@ a:hover {
     color: var(--mt-gold-light);
     font-size: 0.85em;
 }
+
+.footer-logo-unrc {
+    height: 50px;
+    opacity: 0.9;
+}
+
+.footer-logo-app {
+    height: 40px;
+    opacity: 0.85;
+}
+
+.footer-copy {
+    color: var(--mt-gray);
+    font-size: 0.9em;
+}
