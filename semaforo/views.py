@@ -1,8 +1,12 @@
 from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
+
+
+def _puede_gestionar(user):
+    return user.is_superuser or user.groups.filter(name="administrador").exists()
 
 from bitacora.documents import BitacoraOrdeno, SensorLeche
 from semaforo.documents import EventoRiesgoOperativo, RiesgoMastitisHistorico
@@ -12,6 +16,8 @@ from vacas.documents import Vaca
 
 @login_required
 def panel_semaforo(request):
+    if not _puede_gestionar(request.user):
+        return HttpResponseForbidden("No tienes permisos para acceder al semaforo.")
     vacas = Vaca.objects.all()
     riesgos_por_vaca = {}
     for vaca in vacas:
@@ -30,6 +36,8 @@ def panel_semaforo(request):
 
 @login_required
 def evaluar_riesgo(request, vaca_id):
+    if not _puede_gestionar(request.user):
+        return HttpResponseForbidden("No tienes permisos para evaluar riesgo.")
     vaca = Vaca.objects.get(id=vaca_id)
 
     ultima_bitacora = BitacoraOrdeno.objects(vaca=vaca).order_by("-fecha_ordeno").first()
@@ -95,6 +103,8 @@ def evaluar_riesgo(request, vaca_id):
 
 @login_required
 def historial_riesgo(request, vaca_id):
+    if not _puede_gestionar(request.user):
+        return HttpResponseForbidden("No tienes permisos para ver el historial de riesgo.")
     vaca = Vaca.objects.get(id=vaca_id)
     registros = RiesgoMastitisHistorico.objects(vaca=vaca)[:20]
     return render(request, "semaforo/historial.html", {

@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "semaforo",
     "bitacora",
     "calculadora",
+    "usuarios",
 ]
 
 MIDDLEWARE = [

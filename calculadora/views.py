@@ -1,9 +1,20 @@
 from datetime import datetime
 
+from functools import wraps
+
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_POST
+
+
+def requiere_gestion(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not (request.user.is_superuser or request.user.groups.filter(name="administrador").exists()):
+            return HttpResponseForbidden("No tienes permisos para acceder a esta seccion.")
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 from calculadora.calculos import (
     calcular_costo_prevencion,
@@ -16,12 +27,14 @@ from calculadora.documents import ParametrosFinancieros
 
 
 @login_required
+@requiere_gestion
 def panel_calculadora(request):
     params = ParametrosFinancieros.obtener_vigentes()
     return render(request, "calculadora/panel.html", {"params": params})
 
 
 @login_required
+@requiere_gestion
 @require_GET
 def api_perdida_proyectada(request):
     dias = int(request.GET.get("dias", 7))
@@ -31,6 +44,7 @@ def api_perdida_proyectada(request):
 
 
 @login_required
+@requiere_gestion
 @require_GET
 def api_roi(request):
     vacas_total = int(request.GET.get("vacas_total", 50))
@@ -40,6 +54,7 @@ def api_roi(request):
 
 
 @login_required
+@requiere_gestion
 @require_GET
 def api_proyeccion_contagios(request):
     infectadas = int(request.GET.get("infectadas", 2))
@@ -50,6 +65,7 @@ def api_proyeccion_contagios(request):
 
 
 @login_required
+@requiere_gestion
 @require_GET
 def api_prevencion_vs_reaccion(request):
     vacas_total = int(request.GET.get("vacas_total", 50))
@@ -63,6 +79,7 @@ def api_prevencion_vs_reaccion(request):
 
 
 @login_required
+@requiere_gestion
 def admin_parametros(request):
     params = ParametrosFinancieros.obtener_vigentes()
     if request.method == "POST":

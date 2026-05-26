@@ -1,11 +1,14 @@
 from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_POST
 
 from vacas.documents import Vaca, VisitaVeterinaria
+
+
+def _puede_gestionar(user):
+    return user.is_superuser or user.groups.filter(name="administrador").exists()
 
 
 @login_required
@@ -41,6 +44,9 @@ def detalle_vaca(request, vaca_id):
 
 @login_required
 def crear_vaca(request):
+    if not _puede_gestionar(request.user):
+        return HttpResponseForbidden("No tienes permisos para registrar vacas.")
+
     if request.method == "POST":
         fecha_nac = request.POST.get("fecha_nacimiento")
         vaca = Vaca(
@@ -56,7 +62,37 @@ def crear_vaca(request):
 
 
 @login_required
+def editar_vaca(request, vaca_id):
+    if not _puede_gestionar(request.user):
+        return HttpResponseForbidden("No tienes permisos para editar vacas.")
+
+    vaca = Vaca.objects.get(id=vaca_id)
+
+    if request.method == "POST":
+        vaca.arete = request.POST["arete"]
+        vaca.nombre = request.POST["nombre"]
+        fecha_nac = request.POST.get("fecha_nacimiento")
+        vaca.fecha_nacimiento = datetime.strptime(fecha_nac, "%Y-%m-%d") if fecha_nac else vaca.fecha_nacimiento
+        vaca.lote = request.POST.get("lote", "")
+        vaca.estado_salud = request.POST.get("estado_salud", vaca.estado_salud)
+
+        fecha_aisl = request.POST.get("fecha_aislamiento")
+        if fecha_aisl:
+            vaca.fecha_aislamiento = datetime.strptime(fecha_aisl, "%Y-%m-%d")
+        elif vaca.estado_salud not in ("Aislado", "Tratamiento"):
+            vaca.fecha_aislamiento = None
+
+        vaca.save()
+        return redirect("vacas:detalle", vaca_id=str(vaca.id))
+
+    return render(request, "vacas/form_vaca.html", {"vaca": vaca, "editando": True})
+
+
+@login_required
 def crear_visita(request, vaca_id):
+    if not _puede_gestionar(request.user):
+        return HttpResponseForbidden("No tienes permisos para registrar visitas.")
+
     vaca = Vaca.objects.get(id=vaca_id)
     if request.method == "POST":
         visita = VisitaVeterinaria(

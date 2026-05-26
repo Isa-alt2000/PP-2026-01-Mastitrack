@@ -11,4 +11,5 @@ urlpatterns = [
     path("semaforo/", include("semaforo.urls")),
     path("bitacora/", include("bitacora.urls")),
     path("calculadora/", include("calculadora.urls")),
+    path("usuarios/", include("usuarios.urls")),
 ]

@@ -25,7 +25,8 @@
     </div>
     <div class="col-md-6">
         <div class="d-flex flex-column gap-2">
-            {% if es_admin %}
+            {% if puede_gestionar %}
+            <a href="{% url 'vacas:editar' vaca.id %}" class="btn btn-outline-secondary">Editar Vaca</a>
             <a href="{% url 'vacas:crear_visita' vaca.id %}" class="btn btn-outline-primary">Registrar Visita Veterinaria</a>
             <a href="{% url 'semaforo:evaluar' vaca.id %}" class="btn btn-outline-warning" id="btn-evaluar">Evaluar Riesgo</a>
             <a href="{% url 'semaforo:historial' vaca.id %}" class="btn btn-outline-secondary">Historial de Riesgo</a>
@@ -43,7 +44,7 @@
             <th>Tipo</th>
             <th>Tratamiento</th>
             <th>Observaciones</th>
-            {% if es_admin %}<th>Costo</th>{% endif %}
+            {% if puede_gestionar %}<th>Costo</th>{% endif %}
         </tr>
     </thead>
     <tbody>
@@ -53,7 +54,7 @@
             <td>{{ visita.tipo_consulta }}</td>
             <td>{% if visita.aplica_tratamiento %}{{ visita.tratamiento }}{% else %}-{% endif %}</td>
             <td>{{ visita.observaciones }}</td>
-            {% if es_admin %}<td>{{ visita.get_costo|moneda }}</td>{% endif %}
+            {% if puede_gestionar %}<td>{{ visita.get_costo|moneda }}</td>{% endif %}
         </tr>
         {% endfor %}
     </tbody>

@@ -4,6 +4,4 @@ __pycache__/
 *.pyc
 staticfiles/
 *.egg-info/
-dist/
-build/
 .venv/

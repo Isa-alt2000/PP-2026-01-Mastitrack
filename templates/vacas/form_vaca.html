@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Registrar Vaca - Mastitrack{% endblock %}
+{% block title %}{% if editando %}Editar{% else %}Registrar{% endif %} Vaca - Mastitrack{% endblock %}
 
 {% block content %}
-<h2>Registrar Vaca</h2>
+<h2>{% if editando %}Editar Vaca: {{ vaca.arete }}{% else %}Registrar Vaca{% endif %}</h2>
 
 <div class="row">
     <div class="col-md-6">
@@ -11,31 +11,50 @@
             {% csrf_token %}
             <div class="mb-3">
                 <label for="arete" class="form-label">Arete</label>
-                <input type="text" name="arete" id="arete" class="form-control" required>
+                <input type="text" name="arete" id="arete" class="form-control" required
+                       value="{% if editando %}{{ vaca.arete }}{% endif %}">
             </div>
             <div class="mb-3">
                 <label for="nombre" class="form-label">Nombre</label>
-                <input type="text" name="nombre" id="nombre" class="form-control" required>
+                <input type="text" name="nombre" id="nombre" class="form-control" required
+                       value="{% if editando %}{{ vaca.nombre }}{% endif %}">
             </div>
             <div class="mb-3">
                 <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
-                <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control">
+                <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control"
+                       value="{% if editando and vaca.fecha_nacimiento %}{{ vaca.fecha_nacimiento|date:'Y-m-d' }}{% endif %}">
             </div>
             <div class="mb-3">
                 <label for="lote" class="form-label">Lote</label>
-                <input type="text" name="lote" id="lote" class="form-control">
+                <input type="text" name="lote" id="lote" class="form-control"
+                       value="{% if editando %}{{ vaca.lote }}{% endif %}">
             </div>
             <div class="mb-3">
                 <label for="estado_salud" class="form-label">Estado de Salud</label>
                 <select name="estado_salud" id="estado_salud" class="form-select">
-                    <option value="Sano">Sano</option>
-                    <option value="Observacion">Observacion</option>
-                    <option value="Aislado">Aislado</option>
-                    <option value="Tratamiento">Tratamiento</option>
+                    <option value="Sano" {% if editando and vaca.estado_salud == "Sano" %}selected{% endif %}>Sano</option>
+                    <option value="Observacion" {% if editando and vaca.estado_salud == "Observacion" %}selected{% endif %}>Observacion</option>
+                    <option value="Aislado" {% if editando and vaca.estado_salud == "Aislado" %}selected{% endif %}>Aislado</option>
+                    <option value="Tratamiento" {% if editando and vaca.estado_salud == "Tratamiento" %}selected{% endif %}>Tratamiento</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Guardar</button>
+
+            {% if editando %}
+            <div class="mb-3">
+                <label for="fecha_aislamiento" class="form-label">Fecha de Aislamiento</label>
+                <input type="date" name="fecha_aislamiento" id="fecha_aislamiento" class="form-control"
+                       value="{% if vaca.fecha_aislamiento %}{{ vaca.fecha_aislamiento|date:'Y-m-d' }}{% endif %}">
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary">
+                {% if editando %}Guardar Cambios{% else %}Registrar{% endif %}
+            </button>
+            {% if editando %}
+            <a href="{% url 'vacas:detalle' vaca.id %}" class="btn btn-secondary">Cancelar</a>
+            {% else %}
             <a href="{% url 'vacas:lista' %}" class="btn btn-secondary">Cancelar</a>
+            {% endif %}
         </form>
     </div>
 </div>

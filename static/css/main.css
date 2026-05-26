@@ -52,6 +52,36 @@ body {
     font-size: 0.9em;
 }
 
+/* --- Pildoras de rol --- */
+.badge-rol {
+    font-size: 0.7em;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-rol-superadmin {
+    background-color: var(--mt-primary);
+    color: #fff;
+}
+
+.badge-rol-administrador {
+    background-color: var(--mt-gold);
+    color: #333;
+}
+
+.badge-rol-operador {
+    background-color: var(--mt-green);
+    color: #fff;
+}
+
+.badge-rol-sin\ rol {
+    background-color: var(--mt-gray);
+    color: #fff;
+}
+
 .navbar-logo {
     height: 36px;
     margin-right: 10px;
