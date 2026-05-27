@@ -8,58 +8,248 @@
     --mt-green-dark: #235B4E;
     --mt-green: #009288;
     --mt-green-deep: #10312B;
+
+    --sidebar-width: 240px;
+    --sidebar-collapsed: 60px;
 }
 
 body {
     background-color: #f5f3f0;
     color: #333;
+    overflow-x: hidden;
 }
 
-/* --- Navbar --- */
-.navbar-mastitrack {
+/* ============================
+   Sidebar
+   ============================ */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
     background-color: var(--mt-primary-dark);
+    display: flex;
+    flex-direction: column;
+    z-index: 1040;
+    transition: width 0.25s ease;
+    overflow: hidden;
 }
 
-.navbar-mastitrack .navbar-brand {
-    font-weight: bold;
-    color: var(--mt-gold) !important;
+.sidebar.collapsed {
+    width: var(--sidebar-collapsed);
 }
 
-.navbar-mastitrack .nav-link {
-    color: var(--mt-gold-light) !important;
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 14px;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 64px;
 }
 
-.navbar-mastitrack .nav-link:hover,
-.navbar-mastitrack .nav-link:focus {
-    color: #fff !important;
+.sidebar-logo {
+    height: 32px;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
 }
 
-.navbar-mastitrack .nav-link.active {
-    color: #fff !important;
-    border-bottom: 2px solid var(--mt-gold);
+.sidebar.collapsed .sidebar-logo {
+    display: none;
 }
 
-.navbar-mastitrack .navbar-toggler {
-    border-color: var(--mt-gold);
+.sidebar-brand {
+    color: var(--mt-gold);
+    font-weight: 700;
+    font-size: 1.1em;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
-.navbar-mastitrack .navbar-toggler-icon {
-    filter: brightness(2);
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: var(--mt-gold-light);
+    cursor: pointer;
+    padding: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.navbar-mastitrack .nav-user {
-    color: var(--mt-gray) !important;
+.sidebar-toggle:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar.collapsed .sidebar-toggle {
+    margin: 0 auto;
+}
+
+/* --- Nav links --- */
+.sidebar-nav {
+    flex: 1;
+    padding: 12px 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    color: var(--mt-gold-light);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s, color 0.15s;
     font-size: 0.9em;
 }
 
-/* --- Pildoras de rol --- */
-.badge-rol {
+.sidebar-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.sidebar-link.active {
+    background-color: var(--mt-primary);
+    color: #fff;
+    border-right: 3px solid var(--mt-gold);
+}
+
+.sidebar-link svg {
+    flex-shrink: 0;
+}
+
+.sidebar-link-text {
+    overflow: hidden;
+    transition: opacity 0.2s;
+}
+
+.sidebar.collapsed .sidebar-link-text {
+    opacity: 0;
+    width: 0;
+}
+
+.sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.sidebar.collapsed .sidebar-link svg {
+    margin: 0;
+}
+
+/* --- Dividers y secciones --- */
+.sidebar-divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 8px 16px;
+}
+
+.sidebar-section-title {
+    display: block;
+    padding: 6px 18px 4px;
     font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--mt-gray);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .sidebar-section-title {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar.collapsed .sidebar-divider {
+    margin: 4px 10px;
+}
+
+/* --- Footer del sidebar --- */
+.sidebar-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 0;
+}
+
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 18px;
+}
+
+.sidebar.collapsed .sidebar-user {
+    justify-content: center;
+    padding: 8px 0;
+}
+
+.sidebar-username {
+    color: var(--mt-gray);
+    font-size: 0.85em;
+}
+
+.sidebar-logout {
+    color: var(--mt-gray) !important;
+}
+
+.sidebar-logout:hover {
+    color: #fff !important;
+    background-color: rgba(159, 34, 65, 0.3) !important;
+}
+
+/* --- Overlay movil --- */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1035;
+}
+
+.sidebar-overlay.show {
+    display: block;
+}
+
+/* ============================
+   Main content
+   ============================ */
+.main-content {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.25s ease;
+}
+
+.main-content.with-sidebar {
+    margin-left: var(--sidebar-width);
+}
+
+body.sidebar-is-collapsed .main-content.with-sidebar {
+    margin-left: var(--sidebar-collapsed);
+}
+
+/* ============================
+   Pildoras de rol
+   ============================ */
+.badge-rol {
+    font-size: 0.65em;
     font-weight: 600;
-    padding: 4px 10px;
+    padding: 3px 8px;
     border-radius: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    flex-shrink: 0;
 }
 
 .badge-rol-superadmin {
@@ -77,17 +267,9 @@ body {
     color: #fff;
 }
 
-.badge-rol-sin\ rol {
-    background-color: var(--mt-gray);
-    color: #fff;
-}
-
-.navbar-logo {
-    height: 36px;
-    margin-right: 10px;
-}
-
-/* --- Botones --- */
+/* ============================
+   Botones
+   ============================ */
 .btn-primary {
     background-color: var(--mt-primary) !important;
     border-color: var(--mt-primary) !important;
@@ -108,7 +290,9 @@ body {
     color: #fff !important;
 }
 
-/* --- Tarjetas --- */
+/* ============================
+   Tarjetas
+   ============================ */
 .card {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     border-radius: 8px;
@@ -161,7 +345,9 @@ body {
     color: #fff;
 }
 
-/* --- Textos con paleta --- */
+/* ============================
+   Textos con paleta
+   ============================ */
 .text-mt-primary {
     color: var(--mt-primary) !important;
 }
@@ -178,7 +364,9 @@ body {
     color: var(--mt-green-dark) !important;
 }
 
-/* --- Badges de alerta (semaforo) --- */
+/* ============================
+   Badges de alerta (semaforo)
+   ============================ */
 .badge-verde {
     background-color: var(--mt-green) !important;
 }
@@ -192,7 +380,9 @@ body {
     background-color: var(--mt-primary) !important;
 }
 
-/* --- Semaforo cards --- */
+/* ============================
+   Semaforo cards
+   ============================ */
 .semaforo-card {
     transition: transform 0.2s;
 }
@@ -202,7 +392,9 @@ body {
     box-shadow: 0 4px 12px rgba(159, 34, 65, 0.15);
 }
 
-/* --- Progress bars --- */
+/* ============================
+   Progress bars
+   ============================ */
 .progress {
     border-radius: 10px;
 }
@@ -219,7 +411,9 @@ body {
     background-color: var(--mt-primary) !important;
 }
 
-/* --- Formularios --- */
+/* ============================
+   Formularios
+   ============================ */
 .form-range {
     cursor: pointer;
 }
@@ -230,7 +424,9 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(188, 149, 92, 0.25);
 }
 
-/* --- Login --- */
+/* ============================
+   Login
+   ============================ */
 .login-card {
     border-top: 4px solid var(--mt-primary);
 }
@@ -240,7 +436,9 @@ body {
     font-weight: 700;
 }
 
-/* --- Tablas --- */
+/* ============================
+   Tablas
+   ============================ */
 .table thead th {
     background-color: var(--mt-primary-dark);
     color: #fff;
@@ -248,7 +446,9 @@ body {
     border: none;
 }
 
-/* --- General --- */
+/* ============================
+   General
+   ============================ */
 .display-6 {
     font-weight: 600;
 }
@@ -261,11 +461,14 @@ a:hover {
     color: var(--mt-primary-dark);
 }
 
-/* --- Footer --- */
+/* ============================
+   Footer
+   ============================ */
 .footer-mastitrack {
     background-color: var(--mt-green-deep);
     color: var(--mt-gold-light);
     font-size: 0.85em;
+    margin-top: auto;
 }
 
 .footer-logo-unrc {
@@ -281,4 +484,88 @@ a:hover {
 .footer-copy {
     color: var(--mt-gray);
     font-size: 0.9em;
+}
+
+/* ============================
+   Responsive
+   ============================ */
+@media (max-width: 768px) {
+    .sidebar {
+        left: calc(-1 * var(--sidebar-width));
+        width: var(--sidebar-width);
+    }
+
+    .sidebar.mobile-open {
+        left: 0;
+    }
+
+    .sidebar.collapsed {
+        width: var(--sidebar-width);
+        left: calc(-1 * var(--sidebar-width));
+    }
+
+    .sidebar.collapsed.mobile-open {
+        left: 0;
+    }
+
+    .sidebar.collapsed .sidebar-link-text {
+        opacity: 1;
+        width: auto;
+    }
+
+    .sidebar.collapsed .sidebar-link {
+        justify-content: flex-start;
+        padding: 10px 18px;
+    }
+
+    .sidebar.collapsed .sidebar-logo {
+        display: block;
+    }
+
+    .sidebar.collapsed .sidebar-brand {
+        display: inline;
+    }
+
+    .sidebar.collapsed .sidebar-section-title {
+        opacity: 1;
+        height: auto;
+        padding: 6px 18px 4px;
+    }
+
+    .sidebar.collapsed .sidebar-user {
+        justify-content: flex-start;
+        padding: 8px 18px;
+    }
+
+    .main-content.with-sidebar {
+        margin-left: 0;
+    }
+
+    body.sidebar-is-collapsed .main-content.with-sidebar {
+        margin-left: 0;
+    }
+
+    .mobile-toggle {
+        display: flex !important;
+    }
+}
+
+.mobile-toggle {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1050;
+    background-color: var(--mt-primary-dark);
+    color: var(--mt-gold-light);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-toggle:hover {
+    background-color: var(--mt-primary);
+    color: #fff;
 }
