@@ -16,6 +16,8 @@ def requiere_gestion(view_func):
         return view_func(request, *args, **kwargs)
     return wrapper
 
+from vacas.documents import Vaca
+
 from calculadora.calculos import (
     calcular_costo_prevencion,
     calcular_costo_reaccion,
@@ -30,7 +32,16 @@ from calculadora.documents import ParametrosFinancieros
 @requiere_gestion
 def panel_calculadora(request):
     params = ParametrosFinancieros.obtener_vigentes()
-    return render(request, "calculadora/panel.html", {"params": params})
+    total_vacas = Vaca.objects(activa=True).count()
+    return render(request, "calculadora/panel.html", {
+        "params": params,
+        "total_vacas": total_vacas,
+        "params_json": {
+            "insumos": params.precios_insumos,
+            "reaccion": params.costos_reaccion,
+            "produccion": params.valor_produccion,
+        },
+    })
 
 
 @login_required
@@ -60,7 +71,8 @@ def api_proyeccion_contagios(request):
     infectadas = int(request.GET.get("infectadas", 2))
     dias = int(request.GET.get("dias", 14))
     tasa = float(request.GET.get("tasa", 0.1))
-    resultado = proyectar_contagios(infectadas, dias, tasa)
+    vacas_total = int(request.GET.get("vacas_total", 500))
+    resultado = proyectar_contagios(infectadas, dias, tasa, vacas_total)
     return JsonResponse({"proyeccion": resultado})
 
 

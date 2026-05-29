@@ -43,6 +43,11 @@
                 <option value="Aislado" {% if filtro_estado == "Aislado" %}selected{% endif %}>Aislado</option>
                 <option value="Tratamiento" {% if filtro_estado == "Tratamiento" %}selected{% endif %}>Tratamiento</option>
             </select>
+            <div class="form-check d-flex align-items-center ms-2 mb-0">
+                <input type="checkbox" name="inactivas" value="1" id="chk-inactivas" class="form-check-input"
+                       {% if mostrar_inactivas %}checked{% endif %}>
+                <label for="chk-inactivas" class="form-check-label ms-1" style="white-space: nowrap;">Inactivas</label>
+            </div>
             <button type="submit" class="btn btn-outline-secondary">Filtrar</button>
         </form>
     </div>

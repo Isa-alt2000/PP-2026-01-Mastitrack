@@ -105,12 +105,7 @@ def calcular_roi(vacas_total: int, vacas_enfermas: int) -> dict:
     }
 
 
-def proyectar_contagios(vacas_infectadas_iniciales: int, dias: int, tasa_contagio: float = 0.1) -> list:
-    """
-    Ecuaciones diferenciales: modelo SIR simplificado.
-    dI/dt = tasa_contagio * I (crecimiento exponencial acotado)
-    Se usa una aproximacion discreta dia a dia.
-    """
+def proyectar_contagios(vacas_infectadas_iniciales: int, dias: int, tasa_contagio: float = 0.1, vacas_total: int = 500) -> list:
     proyeccion = []
     infectadas = float(vacas_infectadas_iniciales)
 
@@ -121,7 +116,7 @@ def proyectar_contagios(vacas_infectadas_iniciales: int, dias: int, tasa_contagi
         })
         nuevas = infectadas * tasa_contagio
         infectadas = infectadas + nuevas
-        if infectadas > 500:
-            infectadas = 500
+        if infectadas > vacas_total:
+            infectadas = vacas_total
 
     return proyeccion

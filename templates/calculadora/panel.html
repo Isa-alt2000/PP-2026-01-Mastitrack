@@ -5,10 +5,119 @@
 
 {% block extra_css %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.infobox {
+    background-color: #eef6f5;
+    border-left: 4px solid var(--mt-green-dark);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 0.88em;
+}
+.infobox-title {
+    font-weight: 700;
+    color: var(--mt-green-dark);
+    margin-bottom: 6px;
+}
+.infobox-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.infobox-item:last-child {
+    border-bottom: none;
+}
+.infobox-label {
+    color: var(--mt-gray-dark);
+}
+.infobox-value {
+    font-weight: 600;
+    color: #333;
+}
+.desglose-table {
+    font-size: 0.88em;
+    margin-bottom: 0;
+}
+.desglose-table th {
+    background-color: transparent !important;
+    color: var(--mt-gray-dark) !important;
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-bottom: 2px solid #dee2e6;
+}
+.desglose-table td {
+    vertical-align: middle;
+}
+.desglose-table .desglose-total td {
+    font-weight: 700;
+    border-top: 2px solid #dee2e6;
+}
+.desglose-prevencion .desglose-total td {
+    color: var(--mt-green-dark);
+}
+.desglose-reaccion .desglose-total td {
+    color: var(--mt-primary);
+}
+</style>
 {% endblock %}
 
 {% block content %}
 <h2 class="mb-4">Calculadora de Perdidas y ROI</h2>
+
+<!-- Infobox de parametros financieros -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="infobox h-100">
+            <div class="infobox-title">Produccion</div>
+            <div class="infobox-item">
+                <span class="infobox-label">Precio litro leche</span>
+                <span class="infobox-value">${{ params.valor_produccion.precio_venta_litro_leche }}</span>
+            </div>
+            <div class="infobox-item">
+                <span class="infobox-label">Produccion/vaca/dia</span>
+                <span class="infobox-value">{{ params.valor_produccion.produccion_promedio_vaca_dia }} lt</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="infobox h-100">
+            <div class="infobox-title">Insumos de Prevencion</div>
+            <div class="infobox-item">
+                <span class="infobox-label">Sellador yodo (litro)</span>
+                <span class="infobox-value">${{ params.precios_insumos.sellador_yodo_litro }}</span>
+            </div>
+            <div class="infobox-item">
+                <span class="infobox-label">Toallas (paquete)</span>
+                <span class="infobox-value">${{ params.precios_insumos.toallas_paquete }}</span>
+            </div>
+            <div class="infobox-item">
+                <span class="infobox-label">Prueba CMT</span>
+                <span class="infobox-value">${{ params.precios_insumos.prueba_cmt }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="infobox h-100">
+            <div class="infobox-title">Costos de Reaccion</div>
+            <div class="infobox-item">
+                <span class="infobox-label">Antibiotico (prom.)</span>
+                <span class="infobox-value">${{ params.costos_reaccion.precio_promedio_antibiotico }}</span>
+            </div>
+            <div class="infobox-item">
+                <span class="infobox-label">Consulta veterinaria</span>
+                <span class="infobox-value">${{ params.costos_reaccion.costo_promedio_consulta_vet }}</span>
+            </div>
+            <div class="infobox-item">
+                <span class="infobox-label">Reemplazo de vaca</span>
+                <span class="infobox-value">${{ params.costos_reaccion.costo_reemplazo_vaca }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ params_json|json_script:"params-data" }}
 
 <!-- Sliders de parametros -->
 <div class="card mb-4">
@@ -20,12 +129,12 @@
                 <input type="range" class="form-range" id="slider-dias" min="1" max="30" value="7">
             </div>
             <div class="col-md-4">
-                <label for="slider-vacas" class="form-label">Vacas afectadas: <strong id="val-vacas">3</strong></label>
-                <input type="range" class="form-range" id="slider-vacas" min="1" max="50" value="3">
+                <label for="slider-vacas" class="form-label">Vacas afectadas: <strong id="val-vacas">{% if total_vacas > 3 %}3{% else %}{{ total_vacas }}{% endif %}</strong></label>
+                <input type="range" class="form-range" id="slider-vacas" min="1" max="{{ total_vacas }}" value="{% if total_vacas > 3 %}3{% else %}{{ total_vacas }}{% endif %}">
             </div>
             <div class="col-md-4">
-                <label for="slider-total" class="form-label">Total del hato: <strong id="val-total">50</strong></label>
-                <input type="range" class="form-range" id="slider-total" min="10" max="200" value="50">
+                <label for="slider-total" class="form-label">Total del hato: <strong id="val-total">{{ total_vacas }}</strong></label>
+                <input type="range" class="form-range" id="slider-total" min="1" max="{{ total_vacas }}" value="{{ total_vacas }}">
             </div>
         </div>
     </div>
@@ -62,7 +171,7 @@
 </div>
 
 <!-- Graficos -->
-<div class="row">
+<div class="row mb-4">
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">Proyeccion de Contagios (Ec. Diferenciales)</div>
@@ -80,6 +189,50 @@
         </div>
     </div>
 </div>
+
+<!-- Desglose financiero -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header" style="background-color: var(--mt-green-dark); color: #fff;">
+                Desglose de Prevencion
+            </div>
+            <div class="card-body">
+                <table class="table desglose-table desglose-prevencion">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th class="text-end">Costo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-prevencion">
+                        <tr><td colspan="2" class="text-muted text-center">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header" style="background-color: var(--mt-primary); color: #fff;">
+                Desglose de Reaccion
+            </div>
+            <div class="card-body">
+                <table class="table desglose-table desglose-reaccion">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th class="text-end">Costo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-reaccion">
+                        <tr><td colspan="2" class="text-muted text-center">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -88,13 +241,69 @@ const sliderDias = document.getElementById('slider-dias');
 const sliderVacas = document.getElementById('slider-vacas');
 const sliderTotal = document.getElementById('slider-total');
 
+const PARAMS = JSON.parse(document.getElementById('params-data').textContent);
+
 let chartContagios = null;
 let chartPVR = null;
+
+function fmt(n) {
+    return n.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
 
 function actualizarValores() {
     document.getElementById('val-dias').textContent = sliderDias.value;
     document.getElementById('val-vacas').textContent = sliderVacas.value;
     document.getElementById('val-total').textContent = sliderTotal.value;
+}
+
+function renderDesglosePrevencion(prev, vacasTotal) {
+    const ordenos = 60;
+    const tbody = document.getElementById('tbody-prevencion');
+    tbody.innerHTML = `
+        <tr>
+            <td>Sellador de yodo<br><small class="text-muted">${vacasTotal} vacas x ${ordenos} ordenos x 0.005 lt x $${PARAMS.insumos.sellador_yodo_litro}/lt</small></td>
+            <td class="text-end">$${fmt(prev.costo_sellador)}</td>
+        </tr>
+        <tr>
+            <td>Toallas desechables<br><small class="text-muted">${vacasTotal} vacas x ${ordenos} ordenos / 100 paq x $${PARAMS.insumos.toallas_paquete}/paq</small></td>
+            <td class="text-end">$${fmt(prev.costo_toallas)}</td>
+        </tr>
+        <tr>
+            <td>Pruebas CMT<br><small class="text-muted">${vacasTotal} vacas x 2 pruebas/mes x $${PARAMS.insumos.prueba_cmt}/prueba</small></td>
+            <td class="text-end">$${fmt(prev.costo_cmt)}</td>
+        </tr>
+        <tr class="desglose-total">
+            <td>Total Prevencion Mensual</td>
+            <td class="text-end">$${fmt(prev.total_prevencion)}</td>
+        </tr>`;
+}
+
+function renderDesgloseReaccion(reac, vacasEnfermas) {
+    const diasTratamiento = 7;
+    const ltDia = PARAMS.produccion.produccion_promedio_vaca_dia;
+    const litrosPerdidos = vacasEnfermas * diasTratamiento * ltDia;
+    tbody = document.getElementById('tbody-reaccion');
+    tbody.innerHTML = `
+        <tr>
+            <td>Antibioticos<br><small class="text-muted">${vacasEnfermas} vaca(s) x $${PARAMS.reaccion.precio_promedio_antibiotico}/tratamiento</small></td>
+            <td class="text-end">$${fmt(reac.costo_antibiotico)}</td>
+        </tr>
+        <tr>
+            <td>Consulta veterinaria<br><small class="text-muted">${vacasEnfermas} vaca(s) x $${PARAMS.reaccion.costo_promedio_consulta_vet}/consulta</small></td>
+            <td class="text-end">$${fmt(reac.costo_veterinario)}</td>
+        </tr>
+        <tr>
+            <td>Leche descartada<br><small class="text-muted">${vacasEnfermas} vaca(s) x ${diasTratamiento} dias x ${ltDia} lt/dia = ${fmt(litrosPerdidos)} lt x $${PARAMS.produccion.precio_venta_litro_leche}/lt</small></td>
+            <td class="text-end">$${fmt(reac.leche_perdida)}</td>
+        </tr>
+        <tr>
+            <td>Reemplazo (15% descarte)<br><small class="text-muted">${vacasEnfermas} vaca(s) x 15% x $${fmt(PARAMS.reaccion.costo_reemplazo_vaca)}/vaca</small></td>
+            <td class="text-end">$${fmt(reac.costo_reemplazo)}</td>
+        </tr>
+        <tr class="desglose-total">
+            <td>Total Reaccion</td>
+            <td class="text-end">$${fmt(reac.total_reaccion)}</td>
+        </tr>`;
 }
 
 function cargarDatos() {
@@ -105,19 +314,21 @@ function cargarDatos() {
     fetch(`/calculadora/api/perdida/?dias=${dias}&vacas=${vacas}`)
         .then(r => r.json())
         .then(data => {
-            document.getElementById('tarjeta-perdida').textContent = `$${data.perdida_leche.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+            document.getElementById('tarjeta-perdida').textContent = `$${fmt(data.perdida_leche)}`;
             document.getElementById('tarjeta-litros').textContent = `${data.litros_descartados.toLocaleString()} litros descartados`;
         });
 
     fetch(`/calculadora/api/roi/?vacas_total=${total}&vacas_enfermas=${vacas}`)
         .then(r => r.json())
         .then(data => {
-            document.getElementById('tarjeta-reaccion').textContent = `$${data.reaccion.total_reaccion.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+            document.getElementById('tarjeta-reaccion').textContent = `$${fmt(data.reaccion.total_reaccion)}`;
             document.getElementById('tarjeta-roi').textContent = `${data.roi_porcentaje.toFixed(1)}%`;
-            document.getElementById('tarjeta-ahorro').textContent = `Ahorro: $${data.ahorro_estimado.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+            document.getElementById('tarjeta-ahorro').textContent = `Ahorro: $${fmt(data.ahorro_estimado)}`;
+            renderDesglosePrevencion(data.prevencion, parseInt(total));
+            renderDesgloseReaccion(data.reaccion, parseInt(vacas));
         });
 
-    fetch(`/calculadora/api/proyeccion/?infectadas=${vacas}&dias=${dias}`)
+    fetch(`/calculadora/api/proyeccion/?infectadas=${vacas}&dias=${dias}&vacas_total=${total}`)
         .then(r => r.json())
         .then(data => {
             const labels = data.proyeccion.map(p => `Dia ${p.dia}`);
@@ -158,9 +369,13 @@ function cargarDatos() {
         });
 }
 
-sliderDias.addEventListener('input', () => { actualizarValores(); cargarDatos(); });
-sliderVacas.addEventListener('input', () => { actualizarValores(); cargarDatos(); });
-sliderTotal.addEventListener('input', () => { actualizarValores(); cargarDatos(); });
+sliderDias.addEventListener('input', actualizarValores);
+sliderVacas.addEventListener('input', actualizarValores);
+sliderTotal.addEventListener('input', actualizarValores);
+
+sliderDias.addEventListener('change', cargarDatos);
+sliderVacas.addEventListener('change', cargarDatos);
+sliderTotal.addEventListener('change', cargarDatos);
 
 cargarDatos();
 </script>
