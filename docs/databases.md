@@ -111,6 +111,9 @@ erDiagram
         float temperatura
         float conductividad_electrica
         datetime fecha_medicion
+        string origen
+        bool fiable
+        list banderas_calidad
     }
 
     riesgo_mastitis_historico {
@@ -201,8 +204,23 @@ metricas: {
 { precio_venta_litro_leche, produccion_promedio_vaca_dia }
 ```
 
+### Detalle de campos de sensores_leche
+
+**`origen`** - indica como se registro la lectura:
+- `"manual"`: ingresado por un operador desde el formulario web.
+- `"api"`: recibido via API JWT (se muestra como "SENSOR" en el frontend).
+
+**`fiable`** - booleano que indica si todos los valores estan dentro del rango permitido:
+- `true`: todos los valores son validos.
+- `false`: al menos un valor esta fuera de rango (solo ocurre con datos de API, ya que el ingreso manual rechaza valores invalidos).
+
+**`banderas_calidad`** - lista de documentos con la estructura:
+```
+{ campo: "ph", nivel: "sospechoso|alto|no_fiable", mensaje: "pH fuera de rango normal (6.3)" }
+```
+
 ### Notas
 
 - `costo_total_cifrado` en `visitas_veterinarias` almacena el costo cifrado con Fernet. El valor real se obtiene/guarda mediante `get_costo()` / `set_costo()`.
-- `parametros_financieros` actúa como singleton: `obtener_vigentes()` retorna el primer documento o crea uno con valores por defecto.
+- `parametros_financieros` actua como singleton: `obtener_vigentes()` retorna el primer documento o crea uno con valores por defecto.
 - `eventos_riesgo_operativo` desnormaliza campos de otras colecciones para facilitar reportes sin joins.
