@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "bitacora",
     "calculadora",
     "usuarios",
+    "api",
 ]
 
 MIDDLEWARE = [

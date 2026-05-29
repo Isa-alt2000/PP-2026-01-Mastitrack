@@ -12,4 +12,5 @@ urlpatterns = [
     path("bitacora/", include("bitacora.urls")),
     path("calculadora/", include("calculadora.urls")),
     path("usuarios/", include("usuarios.urls")),
+    path("api/", include("api.urls")),
 ]
