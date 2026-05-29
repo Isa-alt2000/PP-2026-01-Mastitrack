@@ -21,7 +21,14 @@ def lista_bitacoras(request):
 @login_required
 def crear_bitacora(request):
     if request.method == "POST":
-        vaca = Vaca.objects.get(id=request.POST["vaca_id"])
+        vaca_id = request.POST.get("vaca_id", "").strip()
+        if not vaca_id:
+            vacas = Vaca.objects.all()
+            return render(request, "bitacora/form_bitacora.html", {
+                "vacas": vacas,
+                "error": "Debes seleccionar una vaca.",
+            })
+        vaca = Vaca.objects.get(id=vaca_id)
 
         ordeno = {
             "pre_ordeno": {
