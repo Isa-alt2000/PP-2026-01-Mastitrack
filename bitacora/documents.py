@@ -91,6 +91,9 @@ class BitacoraOrdeno(me.Document):
         return self.metricas
 
 
+ORIGENES_SENSOR = ("manual", "api")
+
+
 class SensorLeche(me.Document):
     vaca = me.ReferenceField(Vaca, required=True)
     bitacora_ordeno = me.ReferenceField(BitacoraOrdeno)
@@ -99,6 +102,9 @@ class SensorLeche(me.Document):
     temperatura = me.FloatField()
     conductividad_electrica = me.FloatField()
     fecha_medicion = me.DateTimeField(required=True)
+    origen = me.StringField(choices=ORIGENES_SENSOR, default="manual")
+    fiable = me.BooleanField(default=True)
+    banderas_calidad = me.ListField(me.DictField())
 
     meta = {"collection": "sensores_leche", "ordering": ["-fecha_medicion"]}
 

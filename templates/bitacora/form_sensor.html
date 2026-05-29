@@ -1,32 +1,106 @@
 {% extends "base.html" %}
 
-{% block title %}Registrar Sensor - Mastitrack{% endblock %}
+{% block title %}{% if editando %}Editar{% else %}Registrar{% endif %} Sensor - Mastitrack{% endblock %}
 
 {% block content %}
-<h2>Registrar Datos de Sensor - {{ bitacora.vaca.arete }}</h2>
+<h2>{% if editando %}Editar{% else %}Registrar{% endif %} Datos de Sensor - {% if editando %}{{ sensor.vaca.arete }}{% else %}{{ bitacora.vaca.arete }}{% endif %}</h2>
+
+{% if errores %}
+<div class="alert alert-danger alert-dismissible fade show">
+    <strong>Corrige los siguientes errores:</strong>
+    <ul class="mb-0 mt-1">
+        {% for campo, msg in errores.items %}
+        <li>{{ msg }}</li>
+        {% endfor %}
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
 
 <div class="row">
     <div class="col-md-6">
         <form method="post">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="conteo_celulas_somaticas" class="form-label">Conteo Celulas Somaticas (CCS)</label>
-                <input type="number" name="conteo_celulas_somaticas" id="conteo_celulas_somaticas" class="form-control" required>
+                <label for="conteo_celulas_somaticas" class="form-label">Conteo Celulas Somaticas (cel/mL)</label>
+                <input type="number" name="conteo_celulas_somaticas" id="conteo_celulas_somaticas"
+                       class="form-control {% if errores.conteo_celulas_somaticas %}is-invalid{% endif %}"
+                       min="0" max="5000000" step="1"
+                       placeholder="Ej: 150000"
+                       value="{{ valores.conteo_celulas_somaticas|default:'' }}"
+                       required>
+                {% if errores.conteo_celulas_somaticas %}
+                <div class="invalid-feedback">{{ errores.conteo_celulas_somaticas }}</div>
+                {% endif %}
+                <div class="form-text">
+                    Rango: 0 - 5,000,000 |
+                    Normal: &lt; 200,000 |
+                    <span class="text-warning">Sospechoso: &gt; 200,000</span> |
+                    <span class="text-danger">Alto: &gt; 400,000</span>
+                </div>
             </div>
+
             <div class="mb-3">
                 <label for="ph" class="form-label">pH</label>
-                <input type="number" name="ph" id="ph" class="form-control" step="0.01" value="6.80" required>
+                <input type="number" name="ph" id="ph"
+                       class="form-control {% if errores.ph %}is-invalid{% endif %}"
+                       min="6.0" max="8.0" step="0.01"
+                       placeholder="Ej: 6.70"
+                       value="{{ valores.ph|default:'6.80' }}"
+                       required>
+                {% if errores.ph %}
+                <div class="invalid-feedback">{{ errores.ph }}</div>
+                {% endif %}
+                <div class="form-text">
+                    Rango: 6.0 - 8.0 |
+                    Normal: 6.6 - 6.8 |
+                    <span class="text-danger">Alerta: &lt; 6.4 o &gt; 7.0</span>
+                </div>
             </div>
+
             <div class="mb-3">
                 <label for="temperatura" class="form-label">Temperatura (C)</label>
-                <input type="number" name="temperatura" id="temperatura" class="form-control" step="0.1" value="38.5" required>
+                <input type="number" name="temperatura" id="temperatura"
+                       class="form-control {% if errores.temperatura %}is-invalid{% endif %}"
+                       min="30.0" max="42.0" step="0.1"
+                       placeholder="Ej: 37.5"
+                       value="{{ valores.temperatura|default:'38.5' }}"
+                       required>
+                {% if errores.temperatura %}
+                <div class="invalid-feedback">{{ errores.temperatura }}</div>
+                {% endif %}
+                <div class="form-text">
+                    Rango: 30.0 - 42.0 |
+                    Normal: 33.0 - 38.5 |
+                    <span class="text-danger">Alerta: &lt; 32.0 o &gt; 39.5</span>
+                </div>
             </div>
+
             <div class="mb-3">
                 <label for="conductividad_electrica" class="form-label">Conductividad Electrica (mS/cm)</label>
-                <input type="number" name="conductividad_electrica" id="conductividad_electrica" class="form-control" step="0.1" value="5.0" required>
+                <input type="number" name="conductividad_electrica" id="conductividad_electrica"
+                       class="form-control {% if errores.conductividad_electrica %}is-invalid{% endif %}"
+                       min="3.0" max="8.0" step="0.1"
+                       placeholder="Ej: 4.5"
+                       value="{{ valores.conductividad_electrica|default:'5.0' }}"
+                       required>
+                {% if errores.conductividad_electrica %}
+                <div class="invalid-feedback">{{ errores.conductividad_electrica }}</div>
+                {% endif %}
+                <div class="form-text">
+                    Rango: 3.0 - 8.0 |
+                    Normal: 4.0 - 4.9 |
+                    <span class="text-warning">Sospechoso: 4.9 - 5.15</span> |
+                    <span class="text-danger">Alto: &gt; 5.15</span>
+                </div>
             </div>
+
             <button type="submit" class="btn btn-primary">Guardar</button>
+            {% if editando %}
+            <a href="{% url 'vacas:detalle' sensor.vaca.id %}" class="btn btn-secondary">Cancelar</a>
+            {% else %}
             <a href="{% url 'bitacora:detalle' bitacora.id %}" class="btn btn-secondary">Cancelar</a>
+            {% endif %}
         </form>
     </div>
 </div>

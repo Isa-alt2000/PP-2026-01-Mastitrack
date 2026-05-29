@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
 
 from bitacora.documents import BitacoraOrdeno, SensorLeche
@@ -81,20 +81,91 @@ def detalle_bitacora(request, bitacora_id):
 
 @login_required
 def registrar_sensor(request, bitacora_id):
+    from bitacora.validators import RANGOS, validar_sensor_completo
+
     bitacora = BitacoraOrdeno.objects.get(id=bitacora_id)
     if request.method == "POST":
+        raw = {
+            "conteo_celulas_somaticas": request.POST.get("conteo_celulas_somaticas"),
+            "ph": request.POST.get("ph"),
+            "temperatura": request.POST.get("temperatura"),
+            "conductividad_electrica": request.POST.get("conductividad_electrica"),
+        }
+        datos, errores, banderas = validar_sensor_completo(raw)
+        if errores:
+            return render(request, "bitacora/form_sensor.html", {
+                "bitacora": bitacora,
+                "errores": errores,
+                "valores": raw,
+                "rangos": RANGOS,
+            })
+
         sensor = SensorLeche(
             vaca=bitacora.vaca,
             bitacora_ordeno=bitacora,
-            conteo_celulas_somaticas=int(request.POST.get("conteo_celulas_somaticas", 0)),
-            ph=float(request.POST.get("ph", 6.8)),
-            temperatura=float(request.POST.get("temperatura", 38.5)),
-            conductividad_electrica=float(request.POST.get("conductividad_electrica", 5.0)),
+            conteo_celulas_somaticas=datos["conteo_celulas_somaticas"],
+            ph=datos["ph"],
+            temperatura=datos["temperatura"],
+            conductividad_electrica=datos["conductividad_electrica"],
+            banderas_calidad=banderas,
+            origen="manual",
             fecha_medicion=datetime.now(),
         )
         sensor.save()
         return redirect("bitacora:detalle", bitacora_id=str(bitacora.id))
-    return render(request, "bitacora/form_sensor.html", {"bitacora": bitacora})
+    return render(request, "bitacora/form_sensor.html", {
+        "bitacora": bitacora,
+        "rangos": RANGOS,
+    })
+
+
+@login_required
+def editar_sensor(request, sensor_id):
+    from bitacora.validators import RANGOS, validar_sensor_completo
+
+    if not (request.user.is_superuser or request.user.groups.filter(name="administrador").exists()):
+        return HttpResponseForbidden("No tienes permisos para editar sensores.")
+
+    sensor = SensorLeche.objects.get(id=sensor_id)
+
+    if request.method == "POST":
+        raw = {
+            "conteo_celulas_somaticas": request.POST.get("conteo_celulas_somaticas"),
+            "ph": request.POST.get("ph"),
+            "temperatura": request.POST.get("temperatura"),
+            "conductividad_electrica": request.POST.get("conductividad_electrica"),
+        }
+        datos, errores, banderas = validar_sensor_completo(raw)
+        if errores:
+            return render(request, "bitacora/form_sensor.html", {
+                "sensor": sensor,
+                "editando": True,
+                "errores": errores,
+                "valores": raw,
+                "rangos": RANGOS,
+            })
+
+        sensor.conteo_celulas_somaticas = datos["conteo_celulas_somaticas"]
+        sensor.ph = datos["ph"]
+        sensor.temperatura = datos["temperatura"]
+        sensor.conductividad_electrica = datos["conductividad_electrica"]
+        sensor.banderas_calidad = banderas
+        sensor.fiable = True
+        sensor.save()
+        return redirect("vacas:detalle", vaca_id=str(sensor.vaca.id))
+
+    valores = {
+        "conteo_celulas_somaticas": sensor.conteo_celulas_somaticas,
+        "ph": sensor.ph,
+        "temperatura": sensor.temperatura,
+        "conductividad_electrica": sensor.conductividad_electrica,
+    }
+    return render(request, "bitacora/form_sensor.html", {
+        "sensor": sensor,
+        "editando": True,
+        "valores": valores,
+        "rangos": RANGOS,
+    })
 
 
 @login_required

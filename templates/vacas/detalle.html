@@ -53,6 +53,55 @@
             {% endif %}
         </div>
 
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Ultimo Sensor de Leche</h5>
+                {% if ultimo_sensor and puede_gestionar %}
+                <a href="{% url 'bitacora:editar_sensor' ultimo_sensor.id %}" class="btn btn-sm btn-outline-secondary">Editar</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if ultimo_sensor %}
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">CCS</span>
+                    <span class="vaca-detalle-valor">{{ ultimo_sensor.conteo_celulas_somaticas }} cel/mL</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">pH</span>
+                    <span class="vaca-detalle-valor">{{ ultimo_sensor.ph }}</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Temperatura</span>
+                    <span class="vaca-detalle-valor">{{ ultimo_sensor.temperatura }} C</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Conductividad</span>
+                    <span class="vaca-detalle-valor">{{ ultimo_sensor.conductividad_electrica }} mS/cm</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Fecha</span>
+                    <span class="vaca-detalle-valor">{{ ultimo_sensor.fecha_medicion|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Origen</span>
+                    <span class="vaca-detalle-valor">
+                        <span class="badge badge-origen-{% if ultimo_sensor.origen == 'api' %}sensor{% else %}manual{% endif %}">{% if ultimo_sensor.origen == 'api' %}SENSOR{% else %}MANUAL{% endif %}</span>
+                        {% if not ultimo_sensor.fiable %}<span class="badge badge-no-fiable ms-1">No fiable</span>{% endif %}
+                    </span>
+                </div>
+                {% if ultimo_sensor.banderas_calidad %}
+                <div class="mt-2">
+                    {% for b in ultimo_sensor.banderas_calidad %}
+                    <span class="badge badge-bandera-{% if b.nivel == 'alto' or b.nivel == 'no_fiable' %}alto{% else %}sospechoso{% endif %} mb-1">{{ b.mensaje }}</span><br>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% else %}
+                <p class="text-muted mb-0">No hay registros de sensor para esta vaca.</p>
+                {% endif %}
+            </div>
+        </div>
+
         <div id="alerta-riesgo" class="d-none"></div>
 
         {% if visitas %}

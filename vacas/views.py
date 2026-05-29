@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
 
+from bitacora.documents import SensorLeche
 from vacas.documents import Vaca, VisitaVeterinaria
 
 POR_PAGINA = 25
@@ -59,9 +60,11 @@ def lista_vacas(request):
 def detalle_vaca(request, vaca_id):
     vaca = Vaca.objects.get(id=vaca_id)
     visitas = VisitaVeterinaria.objects(vaca=vaca)
+    ultimo_sensor = SensorLeche.objects(vaca=vaca).order_by("-fecha_medicion").first()
     return render(request, "vacas/detalle.html", {
         "vaca": vaca,
         "visitas": visitas,
+        "ultimo_sensor": ultimo_sensor,
     })
 
 

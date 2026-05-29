@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 
 from api.auth import generar_token, verificar_token
 from bitacora.documents import BitacoraOrdeno, SensorLeche
+from bitacora.validators import validar_sensor_api
 from vacas.documents import Vaca
 
 
@@ -75,25 +76,37 @@ def registrar_lecturas(request):
             resultados.append({"arete": arete, "ok": False, "error": "Vaca no encontrada."})
             continue
 
+        datos, errores_parseo, banderas, fiable = validar_sensor_api(lectura)
+        if errores_parseo:
+            resultados.append({"arete": arete, "ok": False, "errores": errores_parseo})
+            continue
+
         bitacora = BitacoraOrdeno.objects(vaca=vaca).order_by("-fecha_ordeno").first()
 
         sensor = SensorLeche(
             vaca=vaca,
             bitacora_ordeno=bitacora,
-            conteo_celulas_somaticas=lectura.get("conteo_celulas_somaticas"),
-            ph=lectura.get("ph"),
-            temperatura=lectura.get("temperatura"),
-            conductividad_electrica=lectura.get("conductividad_electrica"),
+            conteo_celulas_somaticas=datos.get("conteo_celulas_somaticas"),
+            ph=datos.get("ph"),
+            temperatura=datos.get("temperatura"),
+            conductividad_electrica=datos.get("conductividad_electrica"),
+            banderas_calidad=banderas,
+            fiable=fiable,
+            origen="api",
             fecha_medicion=datetime.now(),
         )
         sensor.save()
 
-        resultados.append({
+        resultado = {
             "arete": arete,
             "ok": True,
+            "fiable": fiable,
             "sensor_id": str(sensor.id),
             "bitacora_vinculada": str(bitacora.id) if bitacora else None,
-        })
+        }
+        if banderas:
+            resultado["banderas"] = banderas
+        resultados.append(resultado)
 
     total = len(resultados)
     exitosos = sum(1 for r in resultados if r["ok"])
