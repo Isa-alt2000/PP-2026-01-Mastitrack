@@ -5,7 +5,7 @@
 ```
 pp-mastitis/
 ├── manage.py
-├── requirements.txt
+├── pyproject.toml
 ├── mastitis_project/          # Configuracion Django
 │   ├── settings.py            # SQLite (auth) + MongoDB (dominio), Fernet key
 │   ├── urls.py                # Rutas raiz con include por app
@@ -13,18 +13,19 @@ pp-mastitis/
 │
 ├── core/                      # Utilidades compartidas
 │   ├── crypto.py              # Cifrado/descifrado Fernet (Criptografia)
-│   ├── context_processors.py  # Inyecta es_admin/es_operador en templates
+│   ├── context_processors.py  # Inyecta es_admin/es_operador/puede_gestionar en templates
 │   ├── views.py               # Dashboard principal
-│   └── templatetags/core_tags.py  # Filtros: porcentaje, color_alerta, moneda
+│   └── templatetags/core_tags.py  # Filtros: porcentaje, prob_display, color_alerta, moneda
 │
 ├── vacas/                     # App: gestion de vacas + visitas veterinarias
 │   ├── documents.py           # Vaca, VisitaVeterinaria (costo cifrado)
-│   ├── views.py               # CRUD vacas, crear visita, API por lote
+│   ├── views.py               # CRUD vacas, crear visita, API por lote, paginacion
 │   └── urls.py
 │
 ├── bitacora/                  # App: bitacora de ordeno + sensores de leche
 │   ├── documents.py           # BitacoraOrdeno (con calcular_metricas), SensorLeche
-│   ├── views.py               # CRUD bitacora, registrar sensor, API resumen
+│   ├── validators.py          # Validacion de rangos, banderas de calidad, fiabilidad
+│   ├── views.py               # CRUD bitacora, registrar/editar sensor, API resumen
 │   └── urls.py
 │
 ├── semaforo/                  # App: semaforo de riesgo de mastitis
@@ -39,15 +40,26 @@ pp-mastitis/
 │   ├── views.py               # Panel con sliders, 4 endpoints JSON, admin params
 │   └── urls.py
 │
+├── api/                       # App: API REST con JWT para sensores
+│   ├── auth.py                # Generacion y verificacion de tokens JWT
+│   ├── views.py               # Endpoints: obtener token, registrar lecturas
+│   └── urls.py
+│
+├── usuarios/                  # App: gestion de usuarios y roles
+│   ├── views.py               # CRUD usuarios, asignacion de roles
+│   └── urls.py
+│
 ├── templates/                 # Templates globales + por app
-│   ├── base.html              # Layout con Bootstrap 5 CDN
-│   ├── navbar.html            # Navegacion segun rol (admin/operador)
+│   ├── base.html              # Layout con sidebar colapsable + Bootstrap 5 CDN
+│   ├── sidebar.html           # Menu lateral con navegacion por rol
+│   ├── footer.html            # Footer institucional
 │   ├── dashboard.html         # Panel general con tarjetas resumen
 │   └── registration/login.html
 │
 └── static/
-    ├── css/main.css
-    └── js/main.js             # Utilidad getCookie para CSRF + fetchPost
+    ├── css/main.css           # Paleta institucional, sidebar, cards, badges
+    ├── js/main.js             # CSRF, fetchPost, sidebar toggle
+    └── img/                   # Logos e imagenes (mastitrack, UNRC, vacas_fondo)
 ```
 
 ## Stack Tecnologico
@@ -58,6 +70,8 @@ pp-mastitis/
 - **Frontend**: Django Templates + Bootstrap 5 (CDN) + Chart.js
 - **Cifrado**: Fernet (cryptography)
 - **Inferencia**: NumPy (red neuronal con pesos ficticios)
+- **Auth API**: PyJWT (tokens JWT para endpoints de sensores)
+- **Gestor de dependencias**: uv
 
 ## Colecciones MongoDB
 
@@ -73,12 +87,13 @@ pp-mastitis/
 
 ## Roles de Usuario
 
-| Rol           | Acceso                                                                 |
-|---------------|------------------------------------------------------------------------|
-| Administrador | Dashboard, Vacas (CRUD), Semaforo, Calculadora, Parametros financieros |
-| Operador      | Dashboard (vista general), Vacas (solo lectura), Bitacora de ordeno    |
+| Rol           | Acceso                                                                                    |
+|---------------|-------------------------------------------------------------------------------------------|
+| Superadmin    | Todo el sistema, gestion de usuarios                                                      |
+| Administrador | Dashboard, Vacas (CRUD), Semaforo, Calculadora, Parametros financieros, edicion de sensores |
+| Operador      | Dashboard (vista general), Vacas (solo lectura), Bitacora de ordeno                       |
 
-Los roles se gestionan mediante grupos de Django (`administrador`, `operador`) y se inyectan en cada template via el context processor `core.context_processors.user_group`.
+Los roles se gestionan mediante grupos de Django (`administrador`, `operador`) + `is_superuser` y se inyectan en cada template via el context processor `core.context_processors.user_group` que expone: `es_superadmin`, `es_admin`, `es_operador`, `puede_gestionar`, `rol_usuario`.
 
 ## Modulos y Materias Asociadas
 
@@ -104,6 +119,41 @@ Variables de entrada de la red neuronal:
 - Calculo automatico de metricas: pasos cumplidos, porcentaje de cumplimiento, fallas criticas.
 - Registro separado de datos de sensores de leche (CCS, pH, temperatura, conductividad).
 - Estructura flexible con `DictField` para los pasos del ordeno.
+- Validacion de sensores en 4 capas (ver seccion dedicada).
+- Campo `origen` para distinguir datos manuales vs automaticos (sensor/API).
+
+### 2b. API de Sensores (Criptografia + BD NoSQL)
+
+- Autenticacion JWT (`PyJWT`) con tokens de 8 horas.
+- Endpoint `POST /api/sensores/` que recibe lecturas en lote.
+- Cada lectura se vincula automaticamente a la vaca por arete y a su bitacora mas reciente.
+- Los datos fuera de rango se almacenan con `fiable=false` (no se rechazan).
+- Se generan banderas de calidad por lectura.
+
+### 2c. Validacion de Sensores de Leche
+
+El sistema valida los datos de sensores en 4 capas:
+
+| Capa | Donde | Funcion |
+|------|-------|---------|
+| Frontend | `form_sensor.html` | Inputs con `min`, `max`, `step`, placeholders y texto de ayuda |
+| Validacion server | `validators.py` | Rechaza valores fuera de rango permitido (solo ingreso manual) |
+| Validacion cruzada | `validators.py` | Parseo + rango + banderas en un solo pipeline |
+| Banderas de calidad | `SensorLeche.banderas_calidad` | Marca registros clinicamente sospechosos o no fiables |
+
+Rangos de referencia:
+
+| Variable | Rango permitido | Rango normal | Alerta clinica |
+|----------|----------------|--------------|----------------|
+| CCS (cel/mL) | 0 - 5,000,000 | 0 - 200,000 | > 200,000 sospechoso; > 400,000 alto |
+| pH | 6.0 - 8.0 | 6.6 - 6.8 | < 6.4 o > 7.0 |
+| Temperatura (C) | 30.0 - 42.0 | 33.0 - 38.5 | < 32 o > 39.5 |
+| Conductividad (mS/cm) | 3.0 - 8.0 | 4.0 - 4.9 | > 4.9 sospechoso; > 5.15 alto |
+
+Comportamiento por origen:
+
+- **Manual**: rechaza fuera de rango (el operador debe corregir).
+- **API/Sensor**: almacena siempre, marca `fiable=false` si esta fuera de rango.
 
 ### 3. Calculadora de Perdidas y ROI (Finanzas Corporativas + Ec. Diferenciales)
 
@@ -136,13 +186,17 @@ Variables de entrada de la red neuronal:
 Operador registra ordeno (BitacoraOrdeno)
         |
         v
-Operador/Sensor registra datos de leche (SensorLeche)
+Datos de leche (SensorLeche)
+   ├── Manual: operador ingresa desde el formulario (origen=manual)
+   └── Automatico: sensor envia via API JWT (origen=api)
+        |
+        +---> Validacion de rangos (validators.py)
+        +---> Banderas de calidad (sospechoso / alto / no_fiable)
         |
         v
 Admin ejecuta evaluacion de riesgo (inference.py)
         |
         +---> RiesgoMastitisHistorico (resultado de la NN)
-        |
         +---> EventoRiesgoOperativo (consolidado para analisis)
         |
         v

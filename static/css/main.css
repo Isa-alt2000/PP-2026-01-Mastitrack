@@ -381,6 +381,34 @@ body.sidebar-is-collapsed .main-content.with-sidebar {
 }
 
 /* ============================
+   Badges de sensor
+   ============================ */
+.badge-origen-sensor {
+    background-color: var(--mt-green-dark);
+    color: #fff;
+}
+
+.badge-origen-manual {
+    background-color: var(--mt-gray-dark);
+    color: #fff;
+}
+
+.badge-no-fiable {
+    background-color: var(--mt-primary);
+    color: #fff;
+}
+
+.badge-bandera-alto {
+    background-color: var(--mt-primary);
+    color: #fff;
+}
+
+.badge-bandera-sospechoso {
+    background-color: var(--mt-gold);
+    color: #333;
+}
+
+/* ============================
    Semaforo cards
    ============================ */
 .semaforo-card {

@@ -1,6 +1,38 @@
 # Changelog
 
 ## [0.3.0] - 2026-05-28
+### Diseno y vistas de vacas
+- Vista de tarjetas como vista principal del registro de vacas, con agrupacion por lote en contenedores y paginacion de 25.
+- Toggle para alternar entre vista de tarjetas y vista de lista.
+- Tarjetas con imagen de fondo (`vacas_fondo.png`) y degradado oscuro para legibilidad.
+- Detalle de vaca rediseñado: layout vertical centrado, imagen hero con degradado blanco, nombre en grande y arete debajo.
+- Boton "Regresar al listado" en la parte inferior del detalle.
+
+### API de sensores
+- Nueva app `api` con autenticacion JWT (PyJWT).
+- Endpoint `POST /api/token/` para obtener token con credenciales de usuario.
+- Endpoint `POST /api/sensores/` para recibir lecturas de sensores en lote, vinculadas automaticamente a vacas por arete y a su bitacora mas reciente.
+
+### Validacion de sensores
+- Validacion en 4 capas: frontend (min/max/step/placeholders), servidor (rechazo fuera de rango), validacion cruzada y banderas de calidad.
+- Rangos de referencia para CCS, pH, temperatura y conductividad electrica.
+- Campo `origen` en SensorLeche con valores `manual` y `api` (mostrado como "SENSOR" en frontend).
+- Campo `fiable` para marcar lecturas de API con valores fuera de rango (se almacenan, no se rechazan).
+- Campo `banderas_calidad` con niveles `sospechoso`, `alto` y `no_fiable`.
+- Badges con colores institucionales para origen, fiabilidad y banderas.
+
+### Detalle de vaca
+- Ultimo sensor de leche visible en la pagina de cada vaca con todos sus campos y banderas.
+- Boton de edicion de sensor visible solo para administradores.
+- Vista y ruta de edicion de sensor (`/bitacora/sensor/<id>/editar/`).
+
+### Documentacion
+- README actualizado: nombre Mastitrack, PyJWT en stack, `uv sync`, 3 roles, estructura completa.
+- `docs/architecture.md` actualizado con apps api y usuarios, validacion de sensores, flujo de datos.
+- `docs/api.md` reescrito con documentacion completa de endpoints, validacion y fiabilidad.
+- `docs/databases.md` actualizado con campos nuevos de sensores_leche.
+
+## [0.3.0] - 2026-05-28
 ### Semaforo de riesgo y fixes
 
 - **Evaluaciones visibles al cargar**: al abrir el panel del semaforo se muestran automaticamente las evaluaciones mas recientes de cada vaca (nivel de alerta, probabilidad y fecha).
@@ -18,7 +50,7 @@
 - Añadido `CHANGELOG.md` y diagrama de base de datos en `docs/databases.md` con mermaid.
 
 ## [0.2.0] - 2026-05-27
-# UI
+### UI
 
 - Navegacion migrada de navbar superior a sidebar lateral colapsable con iconos SVG.
 - El sidebar recuerda su estado (expandido/colapsado) entre paginas via localStorage.

@@ -1,68 +1,210 @@
 {% extends "base.html" %}
-{% load core_tags %}
+{% load static core_tags %}
 
 {% block title %}{{ vaca.nombre }} - Mastitrack{% endblock %}
 
 {% block content %}
-<h2>{{ vaca.arete }} - {{ vaca.nombre }}</h2>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card vaca-detalle-card overflow-hidden mb-4">
+            <div class="vaca-detalle-hero" style="background-image: url('{% static 'img/vacas_fondo.png' %}');">
+                <div class="vaca-detalle-hero-overlay"></div>
+                <div class="vaca-detalle-hero-content">
+                    <h2 class="vaca-detalle-nombre">{{ vaca.nombre }}</h2>
+                    <p class="vaca-detalle-arete">{{ vaca.arete }}</p>
+                </div>
+            </div>
 
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card">
             <div class="card-body">
-                <p><strong>Lote:</strong> {{ vaca.lote }}</p>
-                <p><strong>Edad:</strong> {{ vaca.edad_display }}</p>
-                <p><strong>Estado:</strong>
-                    <span class="badge bg-{% if vaca.estado_salud == 'Sano' %}success{% elif vaca.estado_salud == 'Observacion' %}warning{% elif vaca.estado_salud == 'Aislado' %}danger{% else %}info{% endif %}">
-                        {{ vaca.estado_salud }}
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Lote</span>
+                    <span class="vaca-detalle-valor">{{ vaca.lote|default:"Sin asignar" }}</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Edad</span>
+                    <span class="vaca-detalle-valor">{{ vaca.edad_display }}</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Estado</span>
+                    <span class="vaca-detalle-valor">
+                        <span class="badge bg-{% if vaca.estado_salud == 'Sano' %}success{% elif vaca.estado_salud == 'Observacion' %}warning{% elif vaca.estado_salud == 'Aislado' %}danger{% else %}info{% endif %}">
+                            {{ vaca.estado_salud }}
+                        </span>
                     </span>
-                </p>
+                </div>
                 {% if vaca.fecha_aislamiento %}
-                <p><strong>Fecha aislamiento:</strong> {{ vaca.fecha_aislamiento }}</p>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Fecha aislamiento</span>
+                    <span class="vaca-detalle-valor">{{ vaca.fecha_aislamiento|date:"d/m/Y" }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if puede_gestionar %}
+            <div class="card-body border-top pt-3">
+                <div class="d-flex flex-column gap-2">
+                    <a href="{% url 'vacas:editar' vaca.id %}" class="btn btn-outline-secondary">Editar Vaca</a>
+                    <a href="{% url 'vacas:crear_visita' vaca.id %}" class="btn btn-outline-primary">Registrar Visita Veterinaria</a>
+                    <button class="btn btn-outline-warning" id="btn-evaluar"
+                            onclick="evaluarRiesgoVaca('{{ vaca.id }}')">Evaluar Riesgo</button>
+                    <a href="{% url 'semaforo:historial' vaca.id %}" class="btn btn-outline-secondary">Historial de Riesgo</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Ultimo Sensor de Leche</h5>
+                {% if ultimo_sensor and puede_gestionar %}
+                <a href="{% url 'bitacora:editar_sensor' ultimo_sensor.id %}" class="btn btn-sm btn-outline-secondary">Editar</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if ultimo_sensor %}
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">CCS</span>
+                    <span class="vaca-detalle-valor">{{ ultimo_sensor.conteo_celulas_somaticas }} cel/mL</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">pH</span>
+                    <span class="vaca-detalle-valor">{{ ultimo_sensor.ph }}</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Temperatura</span>
+                    <span class="vaca-detalle-valor">{{ ultimo_sensor.temperatura }} C</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Conductividad</span>
+                    <span class="vaca-detalle-valor">{{ ultimo_sensor.conductividad_electrica }} mS/cm</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Fecha</span>
+                    <span class="vaca-detalle-valor">{{ ultimo_sensor.fecha_medicion|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Origen</span>
+                    <span class="vaca-detalle-valor">
+                        <span class="badge badge-origen-{% if ultimo_sensor.origen == 'api' %}sensor{% else %}manual{% endif %}">{% if ultimo_sensor.origen == 'api' %}SENSOR{% else %}MANUAL{% endif %}</span>
+                        {% if not ultimo_sensor.fiable %}<span class="badge badge-no-fiable ms-1">No fiable</span>{% endif %}
+                    </span>
+                </div>
+                {% if ultimo_sensor.banderas_calidad %}
+                <div class="mt-2">
+                    {% for b in ultimo_sensor.banderas_calidad %}
+                    <span class="badge badge-bandera-{% if b.nivel == 'alto' or b.nivel == 'no_fiable' %}alto{% else %}sospechoso{% endif %} mb-1">{{ b.mensaje }}</span><br>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% else %}
+                <p class="text-muted mb-0">No hay registros de sensor para esta vaca.</p>
                 {% endif %}
             </div>
         </div>
-    </div>
-    <div class="col-md-6">
-        <div class="d-flex flex-column gap-2">
-            {% if puede_gestionar %}
-            <a href="{% url 'vacas:editar' vaca.id %}" class="btn btn-outline-secondary">Editar Vaca</a>
-            <a href="{% url 'vacas:crear_visita' vaca.id %}" class="btn btn-outline-primary">Registrar Visita Veterinaria</a>
-            <button class="btn btn-outline-warning" id="btn-evaluar"
-                    onclick="evaluarRiesgoVaca('{{ vaca.id }}')">Evaluar Riesgo</button>
-            <a href="{% url 'semaforo:historial' vaca.id %}" class="btn btn-outline-secondary">Historial de Riesgo</a>
-            {% endif %}
+
+        <div id="alerta-riesgo" class="d-none"></div>
+
+        {% if visitas %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Visitas Veterinarias</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Tratamiento</th>
+                                <th>Observaciones</th>
+                                {% if puede_gestionar %}<th>Costo</th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visita in visitas %}
+                            <tr>
+                                <td>{{ visita.fecha_visita|date:"d/m/Y" }}</td>
+                                <td>{{ visita.tipo_consulta }}</td>
+                                <td>{% if visita.aplica_tratamiento %}{{ visita.tratamiento }}{% else %}-{% endif %}</td>
+                                <td>{{ visita.observaciones }}</td>
+                                {% if puede_gestionar %}<td>{{ visita.get_costo|moneda }}</td>{% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="text-center mb-4">
+            <a href="{% url 'vacas:lista' %}" class="btn btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                    <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                </svg>
+                Regresar al listado
+            </a>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<div id="alerta-riesgo" class="d-none"></div>
-
-{% if visitas %}
-<h4>Visitas Veterinarias</h4>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Tratamiento</th>
-            <th>Observaciones</th>
-            {% if puede_gestionar %}<th>Costo</th>{% endif %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for visita in visitas %}
-        <tr>
-            <td>{{ visita.fecha_visita }}</td>
-            <td>{{ visita.tipo_consulta }}</td>
-            <td>{% if visita.aplica_tratamiento %}{{ visita.tratamiento }}{% else %}-{% endif %}</td>
-            <td>{{ visita.observaciones }}</td>
-            {% if puede_gestionar %}<td>{{ visita.get_costo|moneda }}</td>{% endif %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endif %}
+{% block extra_css %}
+<style>
+.vaca-detalle-card {
+    border: none;
+    border-radius: 12px;
+}
+.vaca-detalle-hero {
+    position: relative;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+}
+.vaca-detalle-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, #fff 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.1) 100%);
+}
+.vaca-detalle-hero-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 24px 12px;
+}
+.vaca-detalle-nombre {
+    font-weight: 800;
+    font-size: 1.6em;
+    color: var(--mt-primary-dark);
+    margin-bottom: 2px;
+}
+.vaca-detalle-arete {
+    font-size: 0.9em;
+    color: var(--mt-gray-dark);
+    margin-bottom: 0;
+    letter-spacing: 0.5px;
+}
+.vaca-detalle-campo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.vaca-detalle-campo:last-child {
+    border-bottom: none;
+}
+.vaca-detalle-label {
+    font-weight: 600;
+    color: var(--mt-gray-dark);
+    font-size: 0.9em;
+}
+.vaca-detalle-valor {
+    color: #333;
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}

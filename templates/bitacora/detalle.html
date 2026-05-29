@@ -29,10 +29,22 @@
             <div class="card-header">Datos de Sensor</div>
             <div class="card-body">
                 {% if sensor %}
-                <p><strong>CCS:</strong> {{ sensor.conteo_celulas_somaticas }}</p>
+                <p><strong>CCS:</strong> {{ sensor.conteo_celulas_somaticas }} cel/mL</p>
                 <p><strong>pH:</strong> {{ sensor.ph }}</p>
                 <p><strong>Temperatura:</strong> {{ sensor.temperatura }} C</p>
                 <p><strong>Conductividad:</strong> {{ sensor.conductividad_electrica }} mS/cm</p>
+                <hr>
+                <p>
+                    <span class="badge badge-origen-{% if sensor.origen == 'api' %}sensor{% else %}manual{% endif %}">{% if sensor.origen == 'api' %}SENSOR{% else %}MANUAL{% endif %}</span>
+                    {% if not sensor.fiable %}
+                    <span class="badge badge-no-fiable">No fiable</span>
+                    {% endif %}
+                </p>
+                {% if sensor.banderas_calidad %}
+                {% for b in sensor.banderas_calidad %}
+                <span class="badge badge-bandera-{% if b.nivel == 'alto' or b.nivel == 'no_fiable' %}alto{% else %}sospechoso{% endif %} mb-1">{{ b.mensaje }}</span><br>
+                {% endfor %}
+                {% endif %}
                 {% else %}
                 <p>Sin datos de sensor.</p>
                 <a href="{% url 'bitacora:registrar_sensor' bitacora.id %}" class="btn btn-sm btn-outline-primary">Registrar Sensor</a>

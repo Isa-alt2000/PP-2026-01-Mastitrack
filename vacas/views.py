@@ -1,10 +1,15 @@
+from collections import OrderedDict
 from datetime import datetime
+from math import ceil
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
 
+from bitacora.documents import SensorLeche
 from vacas.documents import Vaca, VisitaVeterinaria
+
+POR_PAGINA = 25
 
 
 def _puede_gestionar(user):
@@ -15,20 +20,39 @@ def _puede_gestionar(user):
 def lista_vacas(request):
     lote = request.GET.get("lote", "")
     estado = request.GET.get("estado", "")
+    vista = request.GET.get("vista", "tarjetas")
+    pagina = int(request.GET.get("pagina", 1))
 
-    vacas = Vaca.objects
+    qs = Vaca.objects
     if lote:
-        vacas = vacas.filter(lote=lote)
+        qs = qs.filter(lote=lote)
     if estado:
-        vacas = vacas.filter(estado_salud=estado)
+        qs = qs.filter(estado_salud=estado)
+
+    total = qs.count()
+    total_paginas = max(ceil(total / POR_PAGINA), 1)
+    pagina = max(1, min(pagina, total_paginas))
+    vacas = qs.skip((pagina - 1) * POR_PAGINA).limit(POR_PAGINA)
+
+    vacas_por_lote = OrderedDict()
+    if vista == "tarjetas":
+        for v in vacas:
+            key = v.lote or "Sin lote"
+            vacas_por_lote.setdefault(key, []).append(v)
 
     lotes = Vaca.objects.distinct("lote")
 
     return render(request, "vacas/lista.html", {
-        "vacas": vacas,
+        "vacas": vacas if vista == "lista" else [],
+        "vacas_por_lote": vacas_por_lote,
         "lotes": lotes,
         "filtro_lote": lote,
         "filtro_estado": estado,
+        "vista": vista,
+        "pagina": pagina,
+        "total_paginas": total_paginas,
+        "total_vacas": total,
+        "page_range": range(1, total_paginas + 1),
     })
 
 
@@ -36,9 +60,11 @@ def lista_vacas(request):
 def detalle_vaca(request, vaca_id):
     vaca = Vaca.objects.get(id=vaca_id)
     visitas = VisitaVeterinaria.objects(vaca=vaca)
+    ultimo_sensor = SensorLeche.objects(vaca=vaca).order_by("-fecha_medicion").first()
     return render(request, "vacas/detalle.html", {
         "vaca": vaca,
         "visitas": visitas,
+        "ultimo_sensor": ultimo_sensor,
     })
 
 
