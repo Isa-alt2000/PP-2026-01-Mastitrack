@@ -45,6 +45,21 @@
                 <input type="date" name="fecha_aislamiento" id="fecha_aislamiento" class="form-control"
                        value="{% if vaca.fecha_aislamiento %}{{ vaca.fecha_aislamiento|date:'Y-m-d' }}{% endif %}">
             </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    <input type="checkbox" name="activa" id="activa" class="form-check-input"
+                           {% if vaca.activa %}checked{% endif %}
+                           onchange="document.getElementById('razon-baja-group').style.display = this.checked ? 'none' : 'block';">
+                    <label for="activa" class="form-check-label">Vaca activa</label>
+                </div>
+            </div>
+            <div class="mb-3" id="razon-baja-group" style="display: {% if vaca.activa %}none{% else %}block{% endif %};">
+                <label for="razon_baja" class="form-label">Razon de baja</label>
+                <input type="text" name="razon_baja" id="razon_baja" class="form-control"
+                       placeholder="Ej: Vendida, fallecida, trasladada..."
+                       value="{{ vaca.razon_baja|default:'' }}">
+            </div>
             {% endif %}
 
             <button type="submit" class="btn btn-primary">

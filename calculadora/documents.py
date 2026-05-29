@@ -3,6 +3,7 @@ import mongoengine as me
 
 class ParametrosFinancieros(me.Document):
     fecha_actualizacion = me.DateTimeField(required=True)
+    modificado_por = me.StringField()
 
     precios_insumos = me.DictField(default=lambda: {
         "sellador_yodo_litro": 120.50,

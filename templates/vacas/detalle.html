@@ -38,6 +38,17 @@
                     <span class="vaca-detalle-valor">{{ vaca.fecha_aislamiento|date:"d/m/Y" }}</span>
                 </div>
                 {% endif %}
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Estatus</span>
+                    <span class="vaca-detalle-valor">
+                        {% if vaca.activa %}
+                        <span class="badge bg-success">Activa</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inactiva</span>
+                        {% if vaca.razon_baja %}<span class="text-muted ms-1">{{ vaca.razon_baja }}</span>{% endif %}
+                        {% endif %}
+                    </span>
+                </div>
             </div>
 
             {% if puede_gestionar %}

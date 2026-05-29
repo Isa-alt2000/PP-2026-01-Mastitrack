@@ -23,7 +23,11 @@ def lista_vacas(request):
     vista = request.GET.get("vista", "tarjetas")
     pagina = int(request.GET.get("pagina", 1))
 
+    mostrar_inactivas = request.GET.get("inactivas") == "1"
+
     qs = Vaca.objects
+    if not mostrar_inactivas:
+        qs = qs.filter(activa=True)
     if lote:
         qs = qs.filter(lote=lote)
     if estado:
@@ -52,6 +56,7 @@ def lista_vacas(request):
         "pagina": pagina,
         "total_paginas": total_paginas,
         "total_vacas": total,
+        "mostrar_inactivas": mostrar_inactivas,
         "page_range": range(1, total_paginas + 1),
     })
 
@@ -107,6 +112,12 @@ def editar_vaca(request, vaca_id):
             vaca.fecha_aislamiento = datetime.strptime(fecha_aisl, "%Y-%m-%d")
         elif vaca.estado_salud not in ("Aislado", "Tratamiento"):
             vaca.fecha_aislamiento = None
+
+        vaca.activa = request.POST.get("activa") == "on"
+        if vaca.activa:
+            vaca.razon_baja = ""
+        else:
+            vaca.razon_baja = request.POST.get("razon_baja", "")
 
         vaca.save()
         return redirect("vacas:detalle", vaca_id=str(vaca.id))

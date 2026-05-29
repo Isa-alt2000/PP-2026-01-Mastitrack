@@ -7,9 +7,9 @@ from vacas.documents import Vaca
 
 @login_required
 def dashboard(request):
-    total_vacas = Vaca.objects.count()
-    vacas_aisladas = Vaca.objects(estado_salud="Aislado").count()
-    vacas_tratamiento = Vaca.objects(estado_salud="Tratamiento").count()
+    total_vacas = Vaca.objects(activa=True).count()
+    vacas_aisladas = Vaca.objects(activa=True, estado_salud="Aislado").count()
+    vacas_tratamiento = Vaca.objects(activa=True, estado_salud="Tratamiento").count()
 
     ultimos_riesgos = RiesgoMastitisHistorico.objects.order_by(
         "-fecha_evaluacion"

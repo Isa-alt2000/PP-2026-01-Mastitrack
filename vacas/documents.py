@@ -11,6 +11,8 @@ class Vaca(me.Document):
     lote = me.StringField()
     estado_salud = me.StringField(choices=ESTADOS_SALUD, default="Sano")
     fecha_aislamiento = me.DateTimeField()
+    activa = me.BooleanField(default=True)
+    razon_baja = me.StringField()
 
     meta = {"collection": "vacas", "ordering": ["arete"]}
 
