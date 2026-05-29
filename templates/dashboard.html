@@ -60,13 +60,13 @@
                 {% for r in ultimos_riesgos %}
                 <tr>
                     <td>{{ r.vaca.arete }}</td>
-                    <td>{{ r.probabilidad_riesgo|porcentaje }}</td>
+                    <td>{{ r.probabilidad_riesgo|prob_display }}</td>
                     <td>
                         <span class="badge" style="background-color: {{ r.nivel_alerta|color_alerta }}">
                             {{ r.nivel_alerta|upper }}
                         </span>
                     </td>
-                    <td>{{ r.fecha_evaluacion }}</td>
+                    <td>{{ r.fecha_evaluacion|date:"d/m/Y H:i" }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

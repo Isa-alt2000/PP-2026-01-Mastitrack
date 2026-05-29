@@ -10,13 +10,15 @@
         <form method="post">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="vaca_id" class="form-label">Vaca</label>
-                <select name="vaca_id" id="vaca_id" class="form-select" required>
-                    <option value="">Seleccionar vaca...</option>
-                    {% for vaca in vacas %}
-                    <option value="{{ vaca.id }}">{{ vaca.arete }} - {{ vaca.nombre }} ({{ vaca.lote }})</option>
-                    {% endfor %}
-                </select>
+                <label for="vaca-search" class="form-label">Vaca</label>
+                <input type="hidden" name="vaca_id" id="vaca_id" required>
+                <div class="vaca-search-wrapper">
+                    <input type="text" id="vaca-search" class="form-control"
+                           placeholder="Buscar por arete, nombre o lote..."
+                           autocomplete="off">
+                    <div class="vaca-search-results" id="vaca-results"></div>
+                </div>
+                <div id="vaca-selected" class="form-text"></div>
             </div>
 
             <div class="card mb-3">
@@ -86,4 +88,148 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.vaca-search-wrapper {
+    position: relative;
+}
+.vaca-search-results {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.vaca-search-results.show {
+    display: block;
+}
+.vaca-search-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.9em;
+    border-bottom: 1px solid #f0f0f0;
+}
+.vaca-search-item:hover,
+.vaca-search-item.highlighted {
+    background-color: var(--mt-gold-light);
+}
+.vaca-search-item .vaca-arete {
+    font-weight: 600;
+}
+.vaca-search-item .vaca-lote {
+    color: var(--mt-gray-dark);
+    font-size: 0.85em;
+}
+.vaca-search-no-results {
+    padding: 10px 12px;
+    color: var(--mt-gray);
+    font-size: 0.9em;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const vacas = [
+        {% for vaca in vacas %}
+        { id: "{{ vaca.id }}", arete: "{{ vaca.arete }}", nombre: "{{ vaca.nombre }}", lote: "{{ vaca.lote|default:'' }}" },
+        {% endfor %}
+    ];
+
+    const input = document.getElementById('vaca-search');
+    const hidden = document.getElementById('vaca_id');
+    const results = document.getElementById('vaca-results');
+    const selected = document.getElementById('vaca-selected');
+    let highlightIdx = -1;
+
+    function renderResults(filtradas) {
+        highlightIdx = -1;
+        if (filtradas.length === 0) {
+            results.innerHTML = '<div class="vaca-search-no-results">Sin resultados</div>';
+            results.classList.add('show');
+            return;
+        }
+        results.innerHTML = filtradas.map((v, i) =>
+            `<div class="vaca-search-item" data-idx="${i}" data-id="${v.id}">
+                <span class="vaca-arete">${v.arete}</span> - ${v.nombre}
+                ${v.lote ? `<span class="vaca-lote">(${v.lote})</span>` : ''}
+            </div>`
+        ).join('');
+        results.classList.add('show');
+
+        results.querySelectorAll('.vaca-search-item').forEach(item => {
+            item.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                seleccionar(filtradas[parseInt(this.dataset.idx)]);
+            });
+        });
+    }
+
+    function seleccionar(vaca) {
+        hidden.value = vaca.id;
+        input.value = vaca.arete + ' - ' + vaca.nombre;
+        selected.textContent = 'Seleccionada: ' + vaca.arete + ' - ' + vaca.nombre + (vaca.lote ? ' (' + vaca.lote + ')' : '');
+        selected.style.color = 'var(--mt-green-dark)';
+        results.classList.remove('show');
+    }
+
+    function filtrar(query) {
+        const q = query.toLowerCase();
+        return vacas.filter(v =>
+            v.arete.toLowerCase().includes(q) ||
+            v.nombre.toLowerCase().includes(q) ||
+            v.lote.toLowerCase().includes(q)
+        );
+    }
+
+    input.addEventListener('input', function() {
+        hidden.value = '';
+        selected.textContent = '';
+        const q = this.value.trim();
+        renderResults(q.length === 0 ? vacas : filtrar(q));
+    });
+
+    input.addEventListener('focus', function() {
+        const q = this.value.trim();
+        renderResults(q.length === 0 ? vacas : filtrar(q));
+    });
+
+    input.addEventListener('blur', function() {
+        setTimeout(function() { results.classList.remove('show'); }, 150);
+    });
+
+    input.addEventListener('keydown', function(e) {
+        const items = results.querySelectorAll('.vaca-search-item');
+        if (!items.length) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            highlightIdx = Math.min(highlightIdx + 1, items.length - 1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            highlightIdx = Math.max(highlightIdx - 1, 0);
+        } else if (e.key === 'Enter' && highlightIdx >= 0) {
+            e.preventDefault();
+            items[highlightIdx].dispatchEvent(new MouseEvent('mousedown'));
+            return;
+        } else {
+            return;
+        }
+
+        items.forEach(function(el, i) { el.classList.toggle('highlighted', i === highlightIdx); });
+        items[highlightIdx].scrollIntoView({ block: 'nearest' });
+    });
+})();
+</script>
 {% endblock %}

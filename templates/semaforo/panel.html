@@ -6,34 +6,58 @@
 {% block content %}
 <h2 class="mb-4">Semaforo de Riesgo de Mastitis</h2>
 
+{% if evaluaciones_auto > 0 %}
+<div class="alert alert-info alert-dismissible fade show">
+    Se evaluaron automaticamente {{ evaluaciones_auto }} vaca{{ evaluaciones_auto|pluralize:"s" }} con datos nuevos de sensor.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
 <div class="row">
-    {% for vaca in vacas %}
+    {% for item in datos_vacas %}
     <div class="col-md-3 mb-3">
-        {% with riesgo=riesgos|dictsort:vaca.id %}
         <div class="card semaforo-card">
             <div class="card-body text-center">
-                <h6>{{ vaca.arete }}</h6>
-                <p class="text-muted small">{{ vaca.nombre }}</p>
+                <h6>{{ item.vaca.arete }}</h6>
+                <p class="text-muted small mb-2">{{ item.vaca.nombre }}</p>
 
-                {% if riesgos %}
-                {% with r=riesgos|default_if_none:"" %}
-                {% endwith %}
-                {% endif %}
-
-                <div class="semaforo-indicador mb-2" id="indicador-{{ vaca.id }}">
+                <div class="semaforo-indicador mb-2" id="indicador-{{ item.vaca.id }}">
+                    {% if item.riesgo %}
+                    <span class="badge" style="background-color: {{ item.riesgo.nivel_alerta|color_alerta }}">
+                        {{ item.riesgo.nivel_alerta|upper }}
+                        {{ item.riesgo.probabilidad_riesgo|prob_display }}
+                    </span>
+                    <div class="text-muted small mt-1" id="fecha-{{ item.vaca.id }}">
+                        {{ item.riesgo.fecha_evaluacion|date:"d/m/Y H:i" }}
+                    </div>
+                    {% else %}
                     <span class="badge bg-secondary">Sin evaluar</span>
+                    {% endif %}
                 </div>
 
+                {% if item.puede_evaluar %}
                 <button class="btn btn-sm btn-outline-primary"
-                        onclick="evaluarRiesgo('{{ vaca.id }}')">
+                        id="btn-{{ item.vaca.id }}"
+                        onclick="evaluarRiesgo('{{ item.vaca.id }}')">
                     Evaluar
                 </button>
-                <a href="{% url 'semaforo:historial' vaca.id %}" class="btn btn-sm btn-outline-secondary">
+                {% elif item.tiene_sensor %}
+                <button class="btn btn-sm btn-outline-secondary" disabled
+                        title="Ya evaluado con los datos actuales">
+                    Evaluado
+                </button>
+                {% else %}
+                <button class="btn btn-sm btn-outline-secondary" disabled
+                        title="Sin datos de sensor">
+                    Sin datos
+                </button>
+                {% endif %}
+
+                <a href="{% url 'semaforo:historial' item.vaca.id %}" class="btn btn-sm btn-outline-secondary">
                     Historial
                 </a>
             </div>
         </div>
-        {% endwith %}
     </div>
     {% endfor %}
 </div>
@@ -42,18 +66,49 @@
 {% block extra_js %}
 <script>
 function evaluarRiesgo(vacaId) {
+    const btn = document.getElementById(`btn-${vacaId}`);
+    btn.disabled = true;
+    btn.textContent = 'Evaluando...';
+
     fetch(`/semaforo/evaluar/${vacaId}/`)
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 409) {
+                return response.json().then(data => { throw data; });
+            }
+            return response.json();
+        })
         .then(data => {
-            const indicador = document.getElementById(`indicador-${vacaId}`);
             if (data.error) {
-                indicador.innerHTML = `<span class="badge bg-secondary">${data.error}</span>`;
+                alert(data.error);
+                btn.disabled = false;
+                btn.textContent = 'Evaluar';
                 return;
             }
             const colores = {verde: '#009288', amarillo: '#BC955C', rojo: '#9F2241'};
             const color = colores[data.nivel_alerta] || '#98989A';
-            const prob = (data.probabilidad * 100).toFixed(1);
-            indicador.innerHTML = `<span class="badge" style="background-color:${color}">${data.nivel_alerta.toUpperCase()} ${prob}%</span>`;
+            const prob = (data.probabilidad * 100).toFixed(4);
+            const indicador = document.getElementById(`indicador-${vacaId}`);
+            indicador.innerHTML = `
+                <span class="badge" style="background-color:${color}">
+                    ${data.nivel_alerta.toUpperCase()} ${prob}%
+                </span>
+                <div class="text-muted small mt-1">${data.fecha}</div>
+            `;
+            btn.textContent = 'Evaluado';
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-outline-secondary');
+        })
+        .catch(err => {
+            if (err.ya_evaluado) {
+                btn.textContent = 'Evaluado';
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-outline-secondary');
+                alert(err.error);
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Evaluar';
+                alert('Error al evaluar riesgo.');
+            }
         });
 }
 </script>

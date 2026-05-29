@@ -1,5 +1,7 @@
 import numpy as np
 
+VERSION_MODELO = "rn_v1"
+
 
 def sigmoide(x):
     return 1.0 / (1.0 + np.exp(-x))

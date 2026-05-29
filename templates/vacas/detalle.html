@@ -28,12 +28,15 @@
             {% if puede_gestionar %}
             <a href="{% url 'vacas:editar' vaca.id %}" class="btn btn-outline-secondary">Editar Vaca</a>
             <a href="{% url 'vacas:crear_visita' vaca.id %}" class="btn btn-outline-primary">Registrar Visita Veterinaria</a>
-            <a href="{% url 'semaforo:evaluar' vaca.id %}" class="btn btn-outline-warning" id="btn-evaluar">Evaluar Riesgo</a>
+            <button class="btn btn-outline-warning" id="btn-evaluar"
+                    onclick="evaluarRiesgoVaca('{{ vaca.id }}')">Evaluar Riesgo</button>
             <a href="{% url 'semaforo:historial' vaca.id %}" class="btn btn-outline-secondary">Historial de Riesgo</a>
             {% endif %}
         </div>
     </div>
 </div>
+
+<div id="alerta-riesgo" class="d-none"></div>
 
 {% if visitas %}
 <h4>Visitas Veterinarias</h4>
@@ -60,4 +63,65 @@
     </tbody>
 </table>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function evaluarRiesgoVaca(vacaId) {
+    const btn = document.getElementById('btn-evaluar');
+    const contenedor = document.getElementById('alerta-riesgo');
+    btn.disabled = true;
+    btn.textContent = 'Evaluando...';
+
+    fetch(`/semaforo/evaluar/${vacaId}/`)
+        .then(response => {
+            const esError = !response.ok;
+            return response.json().then(data => ({ data, esError, status: response.status }));
+        })
+        .then(({ data, esError, status }) => {
+            contenedor.classList.remove('d-none');
+
+            if (esError) {
+                const tipo = status === 409 ? 'warning' : 'danger';
+                contenedor.innerHTML = `
+                    <div class="alert alert-${tipo} alert-dismissible fade show">
+                        ${data.error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>`;
+                if (status === 409) {
+                    btn.textContent = 'Ya evaluado';
+                    btn.classList.remove('btn-outline-warning');
+                    btn.classList.add('btn-outline-secondary');
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = 'Evaluar Riesgo';
+                }
+                return;
+            }
+
+            const colores = { verde: 'success', amarillo: 'warning', rojo: 'danger' };
+            const color = colores[data.nivel_alerta] || 'secondary';
+            const prob = (data.probabilidad * 100).toFixed(4);
+            contenedor.innerHTML = `
+                <div class="alert alert-${color} alert-dismissible fade show">
+                    <strong>Resultado:</strong> ${data.nivel_alerta.toUpperCase()} - ${prob}%
+                    <span class="text-muted ms-2">(${data.fecha})</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+            btn.textContent = 'Evaluado';
+            btn.classList.remove('btn-outline-warning');
+            btn.classList.add('btn-outline-secondary');
+        })
+        .catch(() => {
+            contenedor.classList.remove('d-none');
+            contenedor.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show">
+                    Error de conexion al evaluar riesgo.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+            btn.disabled = false;
+            btn.textContent = 'Evaluar Riesgo';
+        });
+}
+</script>
 {% endblock %}

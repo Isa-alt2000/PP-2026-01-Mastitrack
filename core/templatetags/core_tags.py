@@ -11,6 +11,14 @@ def porcentaje(valor):
 
 
 @register.filter
+def prob_display(valor):
+    """Muestra probabilidad (0-1) como porcentaje con 4 decimales."""
+    if valor is None:
+        return "0.0000%"
+    return f"{valor * 100:.4f}%"
+
+
+@register.filter
 def color_alerta(nivel):
     colores = {
         "verde": "#009288",
