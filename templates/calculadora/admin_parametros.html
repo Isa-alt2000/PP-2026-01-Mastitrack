@@ -1,90 +1,273 @@
 {% extends "base.html" %}
+{% load core_tags %}
 
 {% block title %}Parametros Financieros - Mastitrack{% endblock %}
 
+{% block extra_css %}
+<style>
+.param-vigente {
+    background-color: #eef6f5;
+    border-left: 4px solid var(--mt-green-dark);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-size: 0.9em;
+}
+.param-vigente-title {
+    font-weight: 700;
+    color: var(--mt-green-dark);
+    margin-bottom: 4px;
+}
+.param-vigente-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.param-vigente-item:last-child {
+    border-bottom: none;
+}
+.param-vigente-label {
+    color: var(--mt-gray-dark);
+}
+.param-vigente-value {
+    font-weight: 600;
+    color: #333;
+}
+.historial-badge-vigente {
+    background-color: var(--mt-green-dark);
+    color: #fff;
+    font-size: 0.75em;
+}
+.historial-expand {
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+.historial-expand:hover {
+    background-color: #f0f0f0;
+}
+.historial-detalle {
+    background-color: #fafafa;
+    font-size: 0.88em;
+}
+.historial-detalle td {
+    padding: 6px 12px;
+    color: var(--mt-gray-dark);
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<h2>Parametros Financieros</h2>
-<p class="text-muted">Ultima actualizacion: {{ params.fecha_actualizacion }}</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Parametros Financieros</h2>
+    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#form-nuevos-params">
+        Modificar Parametros
+    </button>
+</div>
 
 {% if guardado %}
-<div class="alert alert-success">Parametros guardados correctamente.</div>
+<div class="alert alert-success alert-dismissible fade show">
+    Nuevos parametros registrados correctamente.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
 {% endif %}
 
-<form method="post">
-    {% csrf_token %}
-
-    <div class="card mb-3">
-        <div class="card-header">Precios de Insumos de Ordeno</div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="sellador_yodo_litro" class="form-label">Sellador yodo ($/litro)</label>
-                    <input type="number" name="sellador_yodo_litro" id="sellador_yodo_litro"
-                           class="form-control" step="0.01"
-                           value="{{ params.precios_insumos.sellador_yodo_litro }}">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="toallas_paquete" class="form-label">Toallas ($/paquete)</label>
-                    <input type="number" name="toallas_paquete" id="toallas_paquete"
-                           class="form-control" step="0.01"
-                           value="{{ params.precios_insumos.toallas_paquete }}">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="prueba_cmt" class="form-label">Prueba CMT ($/unidad)</label>
-                    <input type="number" name="prueba_cmt" id="prueba_cmt"
-                           class="form-control" step="0.01"
-                           value="{{ params.precios_insumos.prueba_cmt }}">
-                </div>
+<!-- Parametros vigentes -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="param-vigente h-100">
+            <div class="param-vigente-title">Produccion</div>
+            <div class="param-vigente-item">
+                <span class="param-vigente-label">Precio litro leche</span>
+                <span class="param-vigente-value">${{ params.valor_produccion.precio_venta_litro_leche }}</span>
+            </div>
+            <div class="param-vigente-item">
+                <span class="param-vigente-label">Produccion/vaca/dia</span>
+                <span class="param-vigente-value">{{ params.valor_produccion.produccion_promedio_vaca_dia }} lt</span>
             </div>
         </div>
     </div>
-
-    <div class="card mb-3">
-        <div class="card-header">Costos de Reaccion</div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="precio_promedio_antibiotico" class="form-label">Antibiotico promedio ($)</label>
-                    <input type="number" name="precio_promedio_antibiotico" id="precio_promedio_antibiotico"
-                           class="form-control" step="0.01"
-                           value="{{ params.costos_reaccion.precio_promedio_antibiotico }}">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="costo_promedio_consulta_vet" class="form-label">Consulta veterinaria ($)</label>
-                    <input type="number" name="costo_promedio_consulta_vet" id="costo_promedio_consulta_vet"
-                           class="form-control" step="0.01"
-                           value="{{ params.costos_reaccion.costo_promedio_consulta_vet }}">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="costo_reemplazo_vaca" class="form-label">Reemplazo de vaca ($)</label>
-                    <input type="number" name="costo_reemplazo_vaca" id="costo_reemplazo_vaca"
-                           class="form-control" step="0.01"
-                           value="{{ params.costos_reaccion.costo_reemplazo_vaca }}">
-                </div>
+    <div class="col-md-4">
+        <div class="param-vigente h-100">
+            <div class="param-vigente-title">Insumos de Prevencion</div>
+            <div class="param-vigente-item">
+                <span class="param-vigente-label">Sellador yodo (litro)</span>
+                <span class="param-vigente-value">${{ params.precios_insumos.sellador_yodo_litro }}</span>
+            </div>
+            <div class="param-vigente-item">
+                <span class="param-vigente-label">Toallas (paquete)</span>
+                <span class="param-vigente-value">${{ params.precios_insumos.toallas_paquete }}</span>
+            </div>
+            <div class="param-vigente-item">
+                <span class="param-vigente-label">Prueba CMT</span>
+                <span class="param-vigente-value">${{ params.precios_insumos.prueba_cmt }}</span>
             </div>
         </div>
     </div>
-
-    <div class="card mb-3">
-        <div class="card-header">Valor de Produccion</div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="precio_venta_litro_leche" class="form-label">Precio venta litro leche ($)</label>
-                    <input type="number" name="precio_venta_litro_leche" id="precio_venta_litro_leche"
-                           class="form-control" step="0.01"
-                           value="{{ params.valor_produccion.precio_venta_litro_leche }}">
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="produccion_promedio_vaca_dia" class="form-label">Produccion promedio vaca/dia (litros)</label>
-                    <input type="number" name="produccion_promedio_vaca_dia" id="produccion_promedio_vaca_dia"
-                           class="form-control" step="0.1"
-                           value="{{ params.valor_produccion.produccion_promedio_vaca_dia }}">
-                </div>
+    <div class="col-md-4">
+        <div class="param-vigente h-100">
+            <div class="param-vigente-title">Costos de Reaccion</div>
+            <div class="param-vigente-item">
+                <span class="param-vigente-label">Antibiotico (prom.)</span>
+                <span class="param-vigente-value">${{ params.costos_reaccion.precio_promedio_antibiotico }}</span>
+            </div>
+            <div class="param-vigente-item">
+                <span class="param-vigente-label">Consulta veterinaria</span>
+                <span class="param-vigente-value">${{ params.costos_reaccion.costo_promedio_consulta_vet }}</span>
+            </div>
+            <div class="param-vigente-item">
+                <span class="param-vigente-label">Reemplazo de vaca</span>
+                <span class="param-vigente-value">${{ params.costos_reaccion.costo_reemplazo_vaca }}</span>
             </div>
         </div>
     </div>
+</div>
 
-    <button type="submit" class="btn btn-primary">Guardar Parametros</button>
-</form>
+<!-- Formulario colapsable -->
+<div class="collapse mb-4" id="form-nuevos-params">
+    <div class="card">
+        <div class="card-header">Registrar Nuevos Parametros</div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8em; letter-spacing: 0.5px;">Precios de Insumos de Ordeno</h6>
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <label for="sellador_yodo_litro" class="form-label">Sellador yodo ($/litro)</label>
+                        <input type="number" name="sellador_yodo_litro" id="sellador_yodo_litro"
+                               class="form-control" step="0.01"
+                               value="{{ params.precios_insumos.sellador_yodo_litro }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="toallas_paquete" class="form-label">Toallas ($/paquete)</label>
+                        <input type="number" name="toallas_paquete" id="toallas_paquete"
+                               class="form-control" step="0.01"
+                               value="{{ params.precios_insumos.toallas_paquete }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="prueba_cmt" class="form-label">Prueba CMT ($/unidad)</label>
+                        <input type="number" name="prueba_cmt" id="prueba_cmt"
+                               class="form-control" step="0.01"
+                               value="{{ params.precios_insumos.prueba_cmt }}">
+                    </div>
+                </div>
+
+                <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8em; letter-spacing: 0.5px;">Costos de Reaccion</h6>
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <label for="precio_promedio_antibiotico" class="form-label">Antibiotico promedio ($)</label>
+                        <input type="number" name="precio_promedio_antibiotico" id="precio_promedio_antibiotico"
+                               class="form-control" step="0.01"
+                               value="{{ params.costos_reaccion.precio_promedio_antibiotico }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="costo_promedio_consulta_vet" class="form-label">Consulta veterinaria ($)</label>
+                        <input type="number" name="costo_promedio_consulta_vet" id="costo_promedio_consulta_vet"
+                               class="form-control" step="0.01"
+                               value="{{ params.costos_reaccion.costo_promedio_consulta_vet }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="costo_reemplazo_vaca" class="form-label">Reemplazo de vaca ($)</label>
+                        <input type="number" name="costo_reemplazo_vaca" id="costo_reemplazo_vaca"
+                               class="form-control" step="0.01"
+                               value="{{ params.costos_reaccion.costo_reemplazo_vaca }}">
+                    </div>
+                </div>
+
+                <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8em; letter-spacing: 0.5px;">Valor de Produccion</h6>
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <label for="precio_venta_litro_leche" class="form-label">Precio venta litro leche ($)</label>
+                        <input type="number" name="precio_venta_litro_leche" id="precio_venta_litro_leche"
+                               class="form-control" step="0.01"
+                               value="{{ params.valor_produccion.precio_venta_litro_leche }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="produccion_promedio_vaca_dia" class="form-label">Produccion promedio vaca/dia (litros)</label>
+                        <input type="number" name="produccion_promedio_vaca_dia" id="produccion_promedio_vaca_dia"
+                               class="form-control" step="0.1"
+                               value="{{ params.valor_produccion.produccion_promedio_vaca_dia }}">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Registrar Parametros</button>
+                <button type="button" class="btn btn-outline-secondary ms-2" data-bs-toggle="collapse" data-bs-target="#form-nuevos-params">Cancelar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Historial -->
+<div class="card">
+    <div class="card-header">Historial de Parametros</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Modificado por</th>
+                        <th>Leche ($/lt)</th>
+                        <th>Prod. (lt/dia)</th>
+                        <th>Antibiotico ($)</th>
+                        <th>Veterinario ($)</th>
+                        <th>Estatus</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in historial %}
+                    <tr class="historial-expand" data-bs-toggle="collapse" data-bs-target="#detalle-{{ forloop.counter }}">
+                        <td>{{ entry.fecha_actualizacion|date:"d/m/Y H:i" }}</td>
+                        <td>{{ entry.modificado_por|default:"--" }}</td>
+                        <td>${{ entry.valor_produccion.precio_venta_litro_leche }}</td>
+                        <td>{{ entry.valor_produccion.produccion_promedio_vaca_dia }}</td>
+                        <td>${{ entry.costos_reaccion.precio_promedio_antibiotico }}</td>
+                        <td>${{ entry.costos_reaccion.costo_promedio_consulta_vet }}</td>
+                        <td>
+                            {% if forloop.first %}
+                            <span class="badge historial-badge-vigente">Vigente</span>
+                            {% else %}
+                            <span class="text-muted" style="font-size: 0.85em;">Anterior</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="text-muted">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+                            </svg>
+                        </td>
+                    </tr>
+                    <tr class="collapse historial-detalle" id="detalle-{{ forloop.counter }}">
+                        <td colspan="8">
+                            <div class="row py-2 px-3">
+                                <div class="col-md-4">
+                                    <strong>Insumos de Prevencion</strong>
+                                    <div>Sellador yodo: ${{ entry.precios_insumos.sellador_yodo_litro }}/lt</div>
+                                    <div>Toallas: ${{ entry.precios_insumos.toallas_paquete }}/paq</div>
+                                    <div>Prueba CMT: ${{ entry.precios_insumos.prueba_cmt }}/ud</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Costos de Reaccion</strong>
+                                    <div>Antibiotico: ${{ entry.costos_reaccion.precio_promedio_antibiotico }}</div>
+                                    <div>Veterinario: ${{ entry.costos_reaccion.costo_promedio_consulta_vet }}</div>
+                                    <div>Reemplazo: ${{ entry.costos_reaccion.costo_reemplazo_vaca }}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Produccion</strong>
+                                    <div>Precio leche: ${{ entry.valor_produccion.precio_venta_litro_leche }}/lt</div>
+                                    <div>Produccion: {{ entry.valor_produccion.produccion_promedio_vaca_dia }} lt/vaca/dia</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No hay registros de parametros.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

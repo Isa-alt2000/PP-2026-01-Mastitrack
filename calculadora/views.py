@@ -95,24 +95,34 @@ def api_prevencion_vs_reaccion(request):
 def admin_parametros(request):
     params = ParametrosFinancieros.obtener_vigentes()
     if request.method == "POST":
-        params.precios_insumos = {
-            "sellador_yodo_litro": float(request.POST.get("sellador_yodo_litro", 120.50)),
-            "toallas_paquete": float(request.POST.get("toallas_paquete", 85.00)),
-            "prueba_cmt": float(request.POST.get("prueba_cmt", 45.00)),
-        }
-        params.costos_reaccion = {
-            "precio_promedio_antibiotico": float(request.POST.get("precio_promedio_antibiotico", 850.00)),
-            "costo_promedio_consulta_vet": float(request.POST.get("costo_promedio_consulta_vet", 600.00)),
-            "costo_reemplazo_vaca": float(request.POST.get("costo_reemplazo_vaca", 35000.00)),
-        }
-        params.valor_produccion = {
-            "precio_venta_litro_leche": float(request.POST.get("precio_venta_litro_leche", 11.50)),
-            "produccion_promedio_vaca_dia": float(request.POST.get("produccion_promedio_vaca_dia", 25.0)),
-        }
-        params.fecha_actualizacion = datetime.now()
-        params.save()
+        nuevo = ParametrosFinancieros(
+            fecha_actualizacion=datetime.now(),
+            modificado_por=request.user.get_full_name() or request.user.username,
+            precios_insumos={
+                "sellador_yodo_litro": float(request.POST.get("sellador_yodo_litro", 120.50)),
+                "toallas_paquete": float(request.POST.get("toallas_paquete", 85.00)),
+                "prueba_cmt": float(request.POST.get("prueba_cmt", 45.00)),
+            },
+            costos_reaccion={
+                "precio_promedio_antibiotico": float(request.POST.get("precio_promedio_antibiotico", 850.00)),
+                "costo_promedio_consulta_vet": float(request.POST.get("costo_promedio_consulta_vet", 600.00)),
+                "costo_reemplazo_vaca": float(request.POST.get("costo_reemplazo_vaca", 35000.00)),
+            },
+            valor_produccion={
+                "precio_venta_litro_leche": float(request.POST.get("precio_venta_litro_leche", 11.50)),
+                "produccion_promedio_vaca_dia": float(request.POST.get("produccion_promedio_vaca_dia", 25.0)),
+            },
+        )
+        nuevo.save()
+        params = nuevo
+        historial = ParametrosFinancieros.objects.order_by("-fecha_actualizacion")
         return render(request, "calculadora/admin_parametros.html", {
             "params": params,
+            "historial": historial,
             "guardado": True,
         })
-    return render(request, "calculadora/admin_parametros.html", {"params": params})
+    historial = ParametrosFinancieros.objects.order_by("-fecha_actualizacion")
+    return render(request, "calculadora/admin_parametros.html", {
+        "params": params,
+        "historial": historial,
+    })
