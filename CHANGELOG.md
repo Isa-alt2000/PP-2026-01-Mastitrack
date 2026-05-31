@@ -1,5 +1,68 @@
 # Changelog
 
+## [0.4.0] - 2026-05-31
+### Diagnostico de mastitis
+
+- Nuevo campo `diagnostico_mastitis` en `Vaca` con estados: `confirmado`, `sospecha_calculada`, `sospecha_descartada`.
+- El semaforo establece automaticamente `sospecha_calculada` cuando una evaluacion resulta en rojo.
+- El estado `sospecha_descartada` se limpia automaticamente en el siguiente escaneo de leche si el resultado no es rojo.
+- Acciones desde el detalle de vaca: confirmar mastitis, descartar sospecha, limpiar diagnostico, confirmar manualmente.
+- Al confirmar o descartar, tambien se actualiza `SensorLeche.diagnostico_mastitis` del ultimo sensor para consistencia con los datos de entrenamiento.
+- Dashboard muestra tarjetas de vacas con mastitis confirmada (rojo) y sospecha calculada (amarillo) arriba de las evaluaciones de riesgo.
+
+### Evaluacion unificada
+
+- Nuevo modulo `semaforo/services.py` con logica centralizada: `evaluar_vaca()`, `hay_datos_nuevos()`, `reevaluar_todas()`.
+- Registrar un sensor ahora dispara evaluacion de riesgo automaticamente.
+- Editar un sensor re-evalua si es el mas reciente de la vaca.
+- Activar, desactivar o eliminar un modelo activo re-evalua todas las vacas con datos de sensor.
+- El panel del semaforo y el endpoint AJAX ahora usan el modulo de servicios en vez de logica propia.
+
+### Inferencia y calibracion
+
+- Modelo base recalibrado con 4 neuronas especializadas (CCS, conductividad+pH, temperatura, protocolo) y biases ajustados para que valores sanos den verde.
+- Inferencia combinada: cuando hay modelo entrenado activo, la prediccion final es 80% modelo base + 20% modelo entrenado. El base aporta gradacion, el entrenado aporta la senal aprendida del dataset.
+- Validacion de modelos al cargar y activar: se verifica que el .joblib se pueda deserializar, tenga `predict_proba` y acepte 6 features. Si falla, se muestra error y no se guarda/activa.
+- Logging en `recargar_modelo()`: errores de carga se registran con traceback en vez de silenciarse.
+
+### Dependencias
+
+- Agregado `scikit-learn>=1.6.1` (requerido para deserializar modelos .joblib entrenados con MLPClassifier).
+- `numpy` actualizado de `==1.26.4` a `>=2.4.6` para compatibilidad con modelos entrenados en numpy 2.x.
+
+### Modulo de entrenamiento
+
+- Nueva app `entrenamiento` con panel de gestion de modelos de red neuronal.
+- Exportacion de datos como CSV filtrable por rango de fechas, con columnas de sensor + bitacora + diagnostico.
+- Carga de modelos `.joblib` con nombre personalizado y notas.
+- Historial de modelos cargados con acciones de activar, desactivar y eliminar.
+- Al activar un modelo, se recarga dinamicamente en `inference.py` sin reiniciar el servidor.
+- Enlace en sidebar bajo seccion Gestion.
+
+### Carga dinamica de modelos
+
+- `semaforo/inference.py` reescrito para soportar dos modos: modelo base (pesos hardcodeados) y modelo .joblib cargado desde disco.
+- Patron de inicializacion lazy con flag `_inicializado` y `recargar_modelo()`.
+- `VERSION_MODELO` reemplazado por `get_version_modelo()` que refleja el modelo activo.
+- Deteccion automatica de cambio de modelo: al evaluar, si la version del modelo cambio respecto a la ultima evaluacion, se re-evalua.
+
+### Diagnostico de mastitis en sensores
+
+- Nuevo campo `diagnostico_mastitis` en `SensorLeche`.
+- Select en formulario de sensor con opciones: Sin evaluar, Sano (sin mastitis), Mastitis confirmada.
+- Valor pre-seleccionado al editar un sensor existente.
+- Badge de diagnostico en detalle de vaca (rojo Confirmada, verde Descartada, gris Sin evaluar).
+- Columna `diagnostico_mastitis` incluida en el CSV exportado (1, 0, o vacio).
+
+### Sub-repositorio de entrenamiento
+
+- Carpeta `training/` con entorno independiente (`pyproject.toml` propio, venv separado).
+- Script `entrenar.py` con arquitectura de clases: `EntrenadorBase`, `EntrenadorKaggle`, `EntrenadorMastitrack`.
+- Flags `--kaggle` y `--mastitrack` (mutuamente excluyentes) para seleccionar fuente de datos.
+- `EntrenadorMastitrack` valida presencia de columna `diagnostico_mastitis`, filtra registros sin diagnostico, y requiere minimo 2 registros por clase.
+- Modelo de salida con timestamp: `output/modelo_mastitis_YYYYMMDD_HHMMSS.joblib`.
+- Documentacion: `funcionamiento.md` (explicacion paso a paso desde cero con diargamas Mermaid) y `README.md`.
+
 ## [0.3.0] - 2026-05-28
 ### Diseno y vistas de vacas
 - Vista de tarjetas como vista principal del registro de vacas, con agrupacion por lote en contenedores y paginacion de 25.

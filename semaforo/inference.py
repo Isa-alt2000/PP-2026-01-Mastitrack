@@ -1,4 +1,8 @@
+import logging
+
 import numpy as np
+
+log = logging.getLogger(__name__)
 
 _VERSION_BASE = "rn_v1_base"
 
@@ -20,10 +24,7 @@ def clasificar_nivel(probabilidad: float) -> str:
 
 
 def recargar_modelo():
-    import logging
-
     global _modelo_joblib, _version_actual, _inicializado
-    logger = logging.getLogger(__name__)
     _inicializado = True
 
     try:
@@ -34,16 +35,16 @@ def recargar_modelo():
         if activo:
             ruta = settings.MODELOS_DIR / activo.archivo
             if not ruta.exists():
-                logger.error("Modelo activo '%s' no encontrado en disco: %s", activo.nombre, ruta)
+                log.error(f"Modelo activo '{activo.nombre}' no encontrado en disco: {ruta}")
             else:
                 import joblib
 
                 _modelo_joblib = joblib.load(ruta)
                 _version_actual = activo.nombre
-                logger.info("Modelo cargado: %s (%s)", activo.nombre, ruta.name)
+                log.info(f"Modelo cargado: {activo.nombre} ({ruta.name})")
                 return
-    except Exception:
-        logger.exception("Error al cargar modelo entrenado")
+    except Exception as e:
+        log.error(f"Error al cargar modelo entrenado: {e}")
 
     _modelo_joblib = None
     _version_actual = _VERSION_BASE

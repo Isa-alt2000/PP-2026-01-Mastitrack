@@ -1,4 +1,5 @@
 import csv
+import logging
 from datetime import datetime
 
 from django.conf import settings
@@ -9,6 +10,8 @@ from django.shortcuts import redirect, render
 
 from bitacora.documents import BitacoraOrdeno, SensorLeche
 from entrenamiento.documents import ModeloEntrenado
+
+log = logging.getLogger(__name__)
 
 
 def _puede_gestionar(user):
@@ -127,6 +130,7 @@ def cargar_modelo(request):
         validar_modelo(filepath)
     except Exception as e:
         filepath.unlink()
+        log.error(f"Modelo rechazado '{nombre}': {e}")
         messages.error(request, f"El modelo no es valido: {e}")
         return redirect("entrenamiento:panel")
 
@@ -139,6 +143,7 @@ def cargar_modelo(request):
         notas=notas,
     ).save()
 
+    log.info(f"Modelo '{nombre}' cargado por {request.user.username} ({filename})")
     messages.success(request, f"Modelo '{nombre}' cargado exitosamente.")
     return redirect("entrenamiento:panel")
 
@@ -159,6 +164,7 @@ def activar_modelo(request, modelo_id):
         from semaforo.inference import validar_modelo
         validar_modelo(filepath)
     except Exception as e:
+        log.error(f"Modelo '{modelo.nombre}' no se puede activar: {e}")
         messages.error(request, f"No se puede activar: el modelo no carga correctamente. {e}")
         return redirect("entrenamiento:panel")
 
@@ -172,6 +178,7 @@ def activar_modelo(request, modelo_id):
     recargar_modelo()
     evaluadas = reevaluar_todas(request.user.id)
 
+    log.info(f"Modelo '{modelo.nombre}' activado por {request.user.username}, {evaluadas} vacas re-evaluadas")
     messages.success(
         request,
         f"Modelo '{modelo.nombre}' activado. {evaluadas} vaca(s) re-evaluada(s).",
@@ -194,6 +201,7 @@ def desactivar_modelo(request, modelo_id):
     recargar_modelo()
     evaluadas = reevaluar_todas(request.user.id)
 
+    log.info(f"Modelo '{modelo.nombre}' desactivado por {request.user.username}, {evaluadas} vacas re-evaluadas")
     messages.success(
         request,
         f"Modelo '{modelo.nombre}' desactivado. Se usara el modelo base. "
@@ -223,10 +231,12 @@ def eliminar_modelo(request, modelo_id):
 
         recargar_modelo()
         evaluadas = reevaluar_todas(request.user.id)
+        log.info(f"Modelo '{nombre}' eliminado (estaba activo) por {request.user.username}, {evaluadas} vacas re-evaluadas")
         messages.success(
             request,
             f"Modelo '{nombre}' eliminado. {evaluadas} vaca(s) re-evaluada(s).",
         )
     else:
+        log.info(f"Modelo '{nombre}' eliminado por {request.user.username}")
         messages.success(request, f"Modelo '{nombre}' eliminado.")
     return redirect("entrenamiento:panel")

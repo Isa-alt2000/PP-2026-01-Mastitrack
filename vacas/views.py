@@ -1,3 +1,4 @@
+import logging
 from collections import OrderedDict
 from datetime import datetime
 from math import ceil
@@ -8,6 +9,8 @@ from django.shortcuts import redirect, render
 
 from bitacora.documents import SensorLeche
 from vacas.documents import ESTADOS_DIAGNOSTICO_MASTITIS, Vaca, VisitaVeterinaria
+
+log = logging.getLogger(__name__)
 
 POR_PAGINA = 25
 
@@ -159,6 +162,7 @@ def confirmar_mastitis(request, vaca_id):
     if ultimo_sensor:
         ultimo_sensor.diagnostico_mastitis = True
         ultimo_sensor.save()
+    log.info(f"Mastitis confirmada para {vaca.arete} por {request.user.username}")
     return redirect("vacas:detalle", vaca_id=str(vaca.id))
 
 
@@ -173,6 +177,7 @@ def descartar_mastitis(request, vaca_id):
     if ultimo_sensor:
         ultimo_sensor.diagnostico_mastitis = False
         ultimo_sensor.save()
+    log.info(f"Sospecha descartada para {vaca.arete} por {request.user.username}")
     return redirect("vacas:detalle", vaca_id=str(vaca.id))
 
 
@@ -183,6 +188,7 @@ def limpiar_diagnostico(request, vaca_id):
     vaca = Vaca.objects.get(id=vaca_id)
     vaca.diagnostico_mastitis = None
     vaca.save()
+    log.info(f"Diagnostico limpiado para {vaca.arete} por {request.user.username}")
     return redirect("vacas:detalle", vaca_id=str(vaca.id))
 
 

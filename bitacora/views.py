@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
@@ -6,6 +7,8 @@ from django.shortcuts import redirect, render
 
 from bitacora.documents import BitacoraOrdeno, SensorLeche
 from vacas.documents import Vaca
+
+log = logging.getLogger(__name__)
 
 
 @login_required
@@ -134,6 +137,7 @@ def registrar_sensor(request, bitacora_id):
             fecha_medicion=datetime.now(),
         )
         sensor.save()
+        log.info(f"Sensor registrado para {bitacora.vaca.arete} por {request.user.username} (CCS={datos['conteo_celulas_somaticas']}, pH={datos['ph']}, T={datos['temperatura']}, C={datos['conductividad_electrica']})")
 
         from semaforo.services import evaluar_vaca
         evaluar_vaca(bitacora.vaca, request.user.id)

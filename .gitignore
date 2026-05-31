@@ -10,3 +10,4 @@ training/output/*
 training/datasets/*
 !training/output/.gitkeep
 !training/datasets/.gitkeep
+logs/

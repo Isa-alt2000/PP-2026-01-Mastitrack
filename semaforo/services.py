@@ -1,9 +1,12 @@
+import logging
 from datetime import datetime
 
 from bitacora.documents import BitacoraOrdeno, SensorLeche
 from semaforo.documents import EventoRiesgoOperativo, RiesgoMastitisHistorico
 from semaforo.inference import get_version_modelo, predecir_riesgo
 from vacas.documents import Vaca
+
+log = logging.getLogger(__name__)
 
 
 def hay_datos_nuevos(vaca):
@@ -73,9 +76,13 @@ def evaluar_vaca(vaca, user_id):
         if vaca.diagnostico_mastitis != "confirmado":
             vaca.diagnostico_mastitis = "sospecha_calculada"
             vaca.save()
+            log.info(f"Sospecha calculada para {vaca.arete} (prob={resultado['probabilidad']:.4f})")
     elif vaca.diagnostico_mastitis == "sospecha_descartada":
         vaca.diagnostico_mastitis = None
         vaca.save()
+        log.info(f"Sospecha descartada limpiada para {vaca.arete}")
+
+    log.info(f"Evaluacion {vaca.arete}: {resultado['nivel_alerta']} ({resultado['probabilidad']:.4f}) modelo={get_version_modelo()}")
 
     return registro
 
@@ -88,4 +95,5 @@ def reevaluar_todas(user_id):
         if necesita and sensor:
             evaluar_vaca(vaca, user_id)
             evaluadas += 1
+    log.info(f"Re-evaluacion masiva: {evaluadas} vacas actualizadas")
     return evaluadas
