@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load core_tags %}
 
 {% block title %}Vacas - Mastitrack{% endblock %}
 
@@ -40,8 +41,9 @@
                 <option value="">Todos los estados</option>
                 <option value="Sano" {% if filtro_estado == "Sano" %}selected{% endif %}>Sano</option>
                 <option value="Observacion" {% if filtro_estado == "Observacion" %}selected{% endif %}>Observacion</option>
-                <option value="Aislado" {% if filtro_estado == "Aislado" %}selected{% endif %}>Aislado</option>
+                <option value="Enferma" {% if filtro_estado == "Enferma" %}selected{% endif %}>Enferma</option>
                 <option value="Tratamiento" {% if filtro_estado == "Tratamiento" %}selected{% endif %}>Tratamiento</option>
+                <option value="Aislado" {% if filtro_estado == "Aislado" %}selected{% endif %}>Aislado</option>
             </select>
             <div class="form-check d-flex align-items-center ms-2 mb-0">
                 <input type="checkbox" name="inactivas" value="1" id="chk-inactivas" class="form-check-input"
@@ -74,7 +76,7 @@
             <td>{{ vaca.nombre }}</td>
             <td>{{ vaca.lote }}</td>
             <td>
-                <span class="badge bg-{% if vaca.estado_salud == 'Sano' %}success{% elif vaca.estado_salud == 'Observacion' %}warning{% elif vaca.estado_salud == 'Aislado' %}danger{% else %}info{% endif %}">
+                <span class="badge badge-estado-{{ vaca.estado_salud|clase_estado }}">
                     {{ vaca.estado_salud }}
                 </span>
             </td>
@@ -102,12 +104,12 @@
         <div class="row g-3">
             {% for vaca in lote_vacas %}
             <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card vaca-card h-100" style="background-image: url('{% static 'img/vacas_fondo.png' %}');">
+                <div class="card vaca-card h-100 border-estado-{{ vaca.estado_salud|clase_estado }}" style="background-image: url('{% static 'img/vacas_fondo.png' %}');">
                     <div class="vaca-card-overlay">
                         <div class="vaca-card-content">
                             <h6 class="vaca-card-arete">{{ vaca.arete }}</h6>
                             <p class="vaca-card-nombre">{{ vaca.nombre }}</p>
-                            <span class="badge bg-{% if vaca.estado_salud == 'Sano' %}success{% elif vaca.estado_salud == 'Observacion' %}warning{% elif vaca.estado_salud == 'Aislado' %}danger{% else %}info{% endif %} mb-2">
+                            <span class="badge badge-estado-{{ vaca.estado_salud|clase_estado }} mb-2">
                                 {{ vaca.estado_salud }}
                             </span>
                             {% if vaca.edad_display != "Sin dato" %}
@@ -181,6 +183,7 @@
     background-size: cover;
     background-position: center;
     border: none;
+    border-top: 5px solid transparent;
     border-radius: 10px;
     overflow: hidden;
     min-height: 200px;

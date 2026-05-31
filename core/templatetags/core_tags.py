@@ -33,3 +33,15 @@ def moneda(valor):
     if valor is None:
         return "$0.00"
     return f"${valor:,.2f}"
+
+
+@register.filter
+def clase_estado(estado):
+    mapa = {
+        "Sano": "sano",
+        "Observacion": "observacion",
+        "Enferma": "enferma",
+        "Tratamiento": "tratamiento",
+        "Aislado": "aislado",
+    }
+    return mapa.get(estado, "sano")

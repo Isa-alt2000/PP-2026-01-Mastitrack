@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load core_tags %}
 
 {% block title %}Bitacora de Ordeno - Mastitrack{% endblock %}
 
@@ -8,41 +9,157 @@
     <a href="{% url 'bitacora:crear' %}" class="btn btn-primary">Nuevo Ordeno</a>
 </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Vaca</th>
-            <th>Lote</th>
-            <th>Cumplimiento</th>
-            <th>Fallas Criticas</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for b in bitacoras %}
-        <tr>
-            <td>{{ b.fecha_ordeno }}</td>
-            <td>{{ b.vaca.arete }}</td>
-            <td>{{ b.lote }}</td>
-            <td>
+<div class="row mb-3">
+    <div class="col-lg-3 col-md-4 mb-2 mb-md-0">
+        <input type="text" id="busqueda-bitacora" class="form-control" placeholder="Buscar por arete o nombre...">
+    </div>
+    <div class="col-lg-6 col-md-6 mb-2 mb-md-0">
+        <form method="get" class="d-flex gap-2">
+            <select name="lote" class="form-select">
+                <option value="">Todos los lotes</option>
+                {% for l in lotes %}
+                <option value="{{ l }}" {% if filtro_lote == l %}selected{% endif %}>{{ l }}</option>
+                {% endfor %}
+            </select>
+            <select name="cumplimiento" class="form-select">
+                <option value="">Todo cumplimiento</option>
+                <option value="alto" {% if filtro_cumplimiento == "alto" %}selected{% endif %}>Alto (>=80%)</option>
+                <option value="medio" {% if filtro_cumplimiento == "medio" %}selected{% endif %}>Medio (50-79%)</option>
+                <option value="bajo" {% if filtro_cumplimiento == "bajo" %}selected{% endif %}>Bajo (<50%)</option>
+            </select>
+            <button type="submit" class="btn btn-outline-secondary">Filtrar</button>
+        </form>
+    </div>
+    <div class="col-lg-3 col-md-2 text-end d-flex align-items-center justify-content-end">
+        <span class="text-muted">{{ total_bitacoras }} registro{{ total_bitacoras|pluralize:"s" }}</span>
+    </div>
+</div>
+
+{% for b in bitacoras %}
+<div class="card bitacora-card mb-2 bitacora-item {% if b.metricas %}{% if b.metricas.porcentaje_cumplimiento >= 80 %}bitacora-card-ok{% elif b.metricas.porcentaje_cumplimiento >= 50 %}bitacora-card-medio{% else %}bitacora-card-bajo{% endif %}{% endif %}" data-arete="{{ b.vaca.arete }}" data-nombre="{{ b.vaca.nombre }}">
+    <div class="card-body py-2 px-3">
+        <div class="bitacora-desktop d-none d-lg-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3" style="min-width: 340px;">
+                <strong>{{ b.vaca.nombre }}</strong>
+                <span class="text-muted">{{ b.vaca.arete }}</span>
+                <span class="text-muted small">{{ b.lote }}</span>
+                <span class="badge badge-estado-{{ b.vaca.estado_salud|clase_estado }}">{{ b.vaca.estado_salud }}</span>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-grow-1 justify-content-end">
+                <span class="text-muted small">{{ b.fecha_ordeno|date:"d/m/Y H:i" }}</span>
                 {% if b.metricas %}
-                <div class="progress" style="height: 20px;">
-                    <div class="progress-bar {% if b.metricas.porcentaje_cumplimiento >= 80 %}bg-success{% elif b.metricas.porcentaje_cumplimiento >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
-                         style="width: {{ b.metricas.porcentaje_cumplimiento }}%">
-                        {{ b.metricas.porcentaje_cumplimiento }}%
+                <div style="width: 200px;">
+                    <div class="progress" style="height: 18px;">
+                        <div class="progress-bar {% if b.metricas.porcentaje_cumplimiento >= 80 %}bg-success{% elif b.metricas.porcentaje_cumplimiento >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                             style="width: {{ b.metricas.porcentaje_cumplimiento }}%">
+                            {{ b.metricas.porcentaje_cumplimiento }}%
+                        </div>
                     </div>
                 </div>
-                {% else %}-{% endif %}
-            </td>
-            <td>{% if b.metricas %}{{ b.metricas.fallas_criticas }}{% else %}-{% endif %}</td>
-            <td>
+                <div style="width: 80px; text-align: center;">
+                    {% if b.metricas.fallas_criticas > 0 %}
+                    <span class="badge bg-danger">{{ b.metricas.fallas_criticas }} falla{{ b.metricas.fallas_criticas|pluralize:"s" }}</span>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div style="width: 200px;"><span class="text-muted small">Sin metricas</span></div>
+                <div style="width: 80px;"></div>
+                {% endif %}
                 <a href="{% url 'bitacora:detalle' b.id %}" class="btn btn-sm btn-outline-primary">Ver</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="6" class="text-center">No hay registros de ordeno.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+            </div>
+        </div>
+
+        <div class="bitacora-mobile d-lg-none">
+            <div class="d-flex align-items-center justify-content-between bitacora-mobile-toggle" data-bs-toggle="collapse" data-bs-target="#bitacora-{{ b.id }}">
+                <div class="d-flex align-items-center gap-2">
+                    <strong>{{ b.vaca.nombre }}</strong>
+                    <span class="badge badge-estado-{{ b.vaca.estado_salud|clase_estado }}">{{ b.vaca.estado_salud }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    {% if b.metricas %}
+                    <div style="width: 100px;">
+                        <div class="progress" style="height: 16px;">
+                            <div class="progress-bar {% if b.metricas.porcentaje_cumplimiento >= 80 %}bg-success{% elif b.metricas.porcentaje_cumplimiento >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                 style="width: {{ b.metricas.porcentaje_cumplimiento }}%">
+                                {{ b.metricas.porcentaje_cumplimiento }}%
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <span class="text-muted small">{{ b.fecha_ordeno|date:"d/m/Y" }}</span>
+                    <svg class="bitacora-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="collapse" id="bitacora-{{ b.id }}">
+                <div class="pt-2 mt-2 border-top d-flex flex-column gap-1">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small">Arete</span>
+                        <span class="small">{{ b.vaca.arete }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small">Lote</span>
+                        <span class="small">{{ b.lote }}</span>
+                    </div>
+                    {% if b.metricas and b.metricas.fallas_criticas > 0 %}
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small">Fallas criticas</span>
+                        <span class="badge bg-danger">{{ b.metricas.fallas_criticas }} falla{{ b.metricas.fallas_criticas|pluralize:"s" }}</span>
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'bitacora:detalle' b.id %}" class="btn btn-sm btn-outline-primary mt-1">Ver</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="text-center text-muted py-4">No hay registros de ordeno.</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.bitacora-card {
+    border: 2px solid var(--mt-gray);
+    transition: transform 0.2s;
+}
+.bitacora-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(159, 34, 65, 0.15);
+}
+.bitacora-card-ok {
+    border-color: var(--mt-green);
+}
+.bitacora-card-medio {
+    border-color: var(--mt-gold);
+}
+.bitacora-card-bajo {
+    border-color: var(--mt-primary);
+}
+.bitacora-mobile-toggle {
+    cursor: pointer;
+}
+.bitacora-chevron {
+    transition: transform 0.2s;
+    color: var(--mt-gray);
+}
+.bitacora-mobile-toggle[aria-expanded="true"] .bitacora-chevron {
+    transform: rotate(180deg);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('busqueda-bitacora').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.bitacora-item').forEach(function(el) {
+        const arete = el.dataset.arete.toLowerCase();
+        const nombre = el.dataset.nombre.toLowerCase();
+        el.style.display = (arete.includes(q) || nombre.includes(q)) ? '' : 'none';
+    });
+});
+</script>
 {% endblock %}

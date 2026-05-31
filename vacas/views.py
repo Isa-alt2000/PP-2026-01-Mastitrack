@@ -110,7 +110,7 @@ def editar_vaca(request, vaca_id):
         fecha_aisl = request.POST.get("fecha_aislamiento")
         if fecha_aisl:
             vaca.fecha_aislamiento = datetime.strptime(fecha_aisl, "%Y-%m-%d")
-        elif vaca.estado_salud not in ("Aislado", "Tratamiento"):
+        elif vaca.estado_salud not in ("Aislado", "Tratamiento", "Enferma"):
             vaca.fecha_aislamiento = None
 
         vaca.activa = request.POST.get("activa") == "on"

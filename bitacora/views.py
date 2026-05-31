@@ -11,11 +11,25 @@ from vacas.documents import Vaca
 @login_required
 def lista_bitacoras(request):
     lote = request.GET.get("lote", "")
+    cumplimiento = request.GET.get("cumplimiento", "")
     bitacoras = BitacoraOrdeno.objects
     if lote:
         bitacoras = bitacoras.filter(lote=lote)
-    bitacoras = bitacoras[:50]
-    return render(request, "bitacora/lista.html", {"bitacoras": bitacoras})
+    bitacoras = list(bitacoras[:50])
+    if cumplimiento == "alto":
+        bitacoras = [b for b in bitacoras if b.metricas and b.metricas.get("porcentaje_cumplimiento", 0) >= 80]
+    elif cumplimiento == "medio":
+        bitacoras = [b for b in bitacoras if b.metricas and 50 <= b.metricas.get("porcentaje_cumplimiento", 0) < 80]
+    elif cumplimiento == "bajo":
+        bitacoras = [b for b in bitacoras if b.metricas and b.metricas.get("porcentaje_cumplimiento", 0) < 50]
+    lotes = BitacoraOrdeno.objects.distinct("lote")
+    return render(request, "bitacora/lista.html", {
+        "bitacoras": bitacoras,
+        "lotes": lotes,
+        "filtro_lote": lote,
+        "filtro_cumplimiento": cumplimiento,
+        "total_bitacoras": len(bitacoras),
+    })
 
 
 @login_required

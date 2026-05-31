@@ -6,7 +6,7 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
-        <div class="card vaca-detalle-card overflow-hidden mb-4">
+        <div class="card vaca-detalle-card overflow-hidden mb-4 border-estado-{{ vaca.estado_salud|clase_estado }}">
             <div class="vaca-detalle-hero" style="background-image: url('{% static 'img/vacas_fondo.png' %}');">
                 <div class="vaca-detalle-hero-overlay"></div>
                 <div class="vaca-detalle-hero-content">
@@ -27,7 +27,7 @@
                 <div class="vaca-detalle-campo">
                     <span class="vaca-detalle-label">Estado</span>
                     <span class="vaca-detalle-valor">
-                        <span class="badge bg-{% if vaca.estado_salud == 'Sano' %}success{% elif vaca.estado_salud == 'Observacion' %}warning{% elif vaca.estado_salud == 'Aislado' %}danger{% else %}info{% endif %}">
+                        <span class="badge badge-estado-{{ vaca.estado_salud|clase_estado }}">
                             {{ vaca.estado_salud }}
                         </span>
                     </span>
@@ -165,6 +165,7 @@
 <style>
 .vaca-detalle-card {
     border: none;
+    border-top: 6px solid transparent;
     border-radius: 12px;
 }
 .vaca-detalle-hero {

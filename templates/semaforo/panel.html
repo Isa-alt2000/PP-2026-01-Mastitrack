@@ -4,7 +4,30 @@
 {% block title %}Semaforo de Riesgo - Mastitrack{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Semaforo de Riesgo de Mastitis</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Semaforo de Riesgo de Mastitis</h2>
+    <div class="btn-group btn-group-sm" role="group">
+        <button class="btn d-inline-flex align-items-center justify-content-center btn-primary" id="btn-vista-tarjetas" onclick="cambiarVista('tarjetas')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z"/>
+            </svg>
+        </button>
+        <button class="btn d-inline-flex align-items-center justify-content-center btn-outline-secondary" id="btn-vista-lista" onclick="cambiarVista('lista')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <input type="text" id="busqueda-semaforo" class="form-control" placeholder="Buscar por arete o nombre...">
+    </div>
+    <div class="col-md-8 text-end d-flex align-items-center justify-content-end">
+        <span class="text-muted">{{ datos_vacas|length }} vaca{{ datos_vacas|length|pluralize:"s" }}</span>
+    </div>
+</div>
 
 {% if evaluaciones_auto > 0 %}
 <div class="alert alert-info alert-dismissible fade show">
@@ -13,21 +36,75 @@
 </div>
 {% endif %}
 
-<div class="row">
-    {% for item in datos_vacas %}
-    <div class="col-md-3 mb-3">
-        <div class="card semaforo-card">
-            <div class="card-body text-center">
-                <h6>{{ item.vaca.arete }}</h6>
-                <p class="text-muted small mb-2">{{ item.vaca.nombre }}</p>
+<div id="vista-tarjetas">
+    <div class="row">
+        {% for item in datos_vacas %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-3 d-flex semaforo-item" data-arete="{{ item.vaca.arete }}" data-nombre="{{ item.vaca.nombre }}">
+            <div class="card semaforo-card {% if item.riesgo %}semaforo-card-{{ item.riesgo.nivel_alerta }}{% endif %} w-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h6 class="mb-1">{{ item.vaca.arete }}</h6>
+                    <p class="text-muted small mb-2">{{ item.vaca.nombre }}</p>
 
-                <div class="semaforo-indicador mb-2" id="indicador-{{ item.vaca.id }}">
+                    <div class="semaforo-indicador mb-2" id="indicador-tarjeta-{{ item.vaca.id }}">
+                        {% if item.riesgo %}
+                        <span class="badge" style="background-color: {{ item.riesgo.nivel_alerta|color_alerta }}">
+                            {{ item.riesgo.probabilidad_riesgo|prob_display }}
+                        </span>
+                        <div class="text-muted small mt-1">
+                            {{ item.riesgo.fecha_evaluacion|date:"d/m/Y H:i" }}
+                        </div>
+                        {% else %}
+                        <span class="badge bg-secondary">Sin evaluar</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-1 justify-content-center mt-auto">
+                        {% if item.puede_evaluar %}
+                        <button class="btn btn-sm btn-outline-primary"
+                                id="btn-{{ item.vaca.id }}"
+                                onclick="evaluarRiesgo('{{ item.vaca.id }}')">
+                            Evaluar
+                        </button>
+                        {% elif item.tiene_sensor %}
+                        <button class="btn btn-sm btn-outline-secondary" disabled
+                                title="Ya evaluado con los datos actuales">
+                            Evaluado
+                        </button>
+                        {% else %}
+                        <button class="btn btn-sm btn-outline-secondary" disabled
+                                title="Sin datos de sensor">
+                            Sin datos
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'semaforo:historial' item.vaca.id %}" class="btn btn-sm btn-outline-secondary">
+                            Historial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="vista-lista" class="d-none">
+    {% for item in datos_vacas %}
+    <div class="card semaforo-card mb-2 {% if item.riesgo %}semaforo-card-{{ item.riesgo.nivel_alerta }}{% endif %} semaforo-item" data-arete="{{ item.vaca.arete }}" data-nombre="{{ item.vaca.nombre }}">
+        <div class="card-body d-flex align-items-center justify-content-between py-2 px-3">
+            <div class="d-flex align-items-center gap-3">
+                <div>
+                    <strong>{{ item.vaca.arete }}</strong>
+                    <span class="text-muted ms-1">{{ item.vaca.nombre }}</span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="semaforo-indicador text-center" id="indicador-lista-{{ item.vaca.id }}" style="min-width: 120px;">
                     {% if item.riesgo %}
                     <span class="badge" style="background-color: {{ item.riesgo.nivel_alerta|color_alerta }}">
-                        {{ item.riesgo.nivel_alerta|upper }}
                         {{ item.riesgo.probabilidad_riesgo|prob_display }}
                     </span>
-                    <div class="text-muted small mt-1" id="fecha-{{ item.vaca.id }}">
+                    <div class="text-muted small" id="fecha-{{ item.vaca.id }}">
                         {{ item.riesgo.fecha_evaluacion|date:"d/m/Y H:i" }}
                     </div>
                     {% else %}
@@ -35,27 +112,28 @@
                     {% endif %}
                 </div>
 
-                {% if item.puede_evaluar %}
-                <button class="btn btn-sm btn-outline-primary"
-                        id="btn-{{ item.vaca.id }}"
-                        onclick="evaluarRiesgo('{{ item.vaca.id }}')">
-                    Evaluar
-                </button>
-                {% elif item.tiene_sensor %}
-                <button class="btn btn-sm btn-outline-secondary" disabled
-                        title="Ya evaluado con los datos actuales">
-                    Evaluado
-                </button>
-                {% else %}
-                <button class="btn btn-sm btn-outline-secondary" disabled
-                        title="Sin datos de sensor">
-                    Sin datos
-                </button>
-                {% endif %}
-
-                <a href="{% url 'semaforo:historial' item.vaca.id %}" class="btn btn-sm btn-outline-secondary">
-                    Historial
-                </a>
+                <div class="d-flex gap-1">
+                    {% if item.puede_evaluar %}
+                    <button class="btn btn-sm btn-outline-primary"
+                            id="btn-lista-{{ item.vaca.id }}"
+                            onclick="evaluarRiesgo('{{ item.vaca.id }}')">
+                        Evaluar
+                    </button>
+                    {% elif item.tiene_sensor %}
+                    <button class="btn btn-sm btn-outline-secondary" disabled
+                            title="Ya evaluado con los datos actuales">
+                        Evaluado
+                    </button>
+                    {% else %}
+                    <button class="btn btn-sm btn-outline-secondary" disabled
+                            title="Sin datos de sensor">
+                        Sin datos
+                    </button>
+                    {% endif %}
+                    <a href="{% url 'semaforo:historial' item.vaca.id %}" class="btn btn-sm btn-outline-secondary">
+                        Historial
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -63,10 +141,47 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+#vista-tarjetas .semaforo-card {
+    min-height: 180px;
+}
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
+function cambiarVista(vista) {
+    const tarjetas = document.getElementById('vista-tarjetas');
+    const lista = document.getElementById('vista-lista');
+    const btnTarjetas = document.getElementById('btn-vista-tarjetas');
+    const btnLista = document.getElementById('btn-vista-lista');
+
+    if (vista === 'tarjetas') {
+        tarjetas.classList.remove('d-none');
+        lista.classList.add('d-none');
+        btnTarjetas.className = 'btn d-inline-flex align-items-center justify-content-center btn-primary';
+        btnLista.className = 'btn d-inline-flex align-items-center justify-content-center btn-outline-secondary';
+    } else {
+        tarjetas.classList.add('d-none');
+        lista.classList.remove('d-none');
+        btnTarjetas.className = 'btn d-inline-flex align-items-center justify-content-center btn-outline-secondary';
+        btnLista.className = 'btn d-inline-flex align-items-center justify-content-center btn-primary';
+    }
+}
+
+document.getElementById('busqueda-semaforo').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.semaforo-item').forEach(function(el) {
+        const arete = el.dataset.arete.toLowerCase();
+        const nombre = el.dataset.nombre.toLowerCase();
+        const visible = arete.includes(q) || nombre.includes(q);
+        el.style.display = visible ? '' : 'none';
+    });
+});
+
 function evaluarRiesgo(vacaId) {
-    const btn = document.getElementById(`btn-${vacaId}`);
+    const btn = document.getElementById(`btn-${vacaId}`) || document.getElementById(`btn-lista-${vacaId}`);
     btn.disabled = true;
     btn.textContent = 'Evaluando...';
 
@@ -87,16 +202,32 @@ function evaluarRiesgo(vacaId) {
             const colores = {verde: '#009288', amarillo: '#BC955C', rojo: '#9F2241'};
             const color = colores[data.nivel_alerta] || '#98989A';
             const prob = (data.probabilidad * 100).toFixed(4);
-            const indicador = document.getElementById(`indicador-${vacaId}`);
-            indicador.innerHTML = `
+            const badgeHtml = `
                 <span class="badge" style="background-color:${color}">
-                    ${data.nivel_alerta.toUpperCase()} ${prob}%
+                    ${prob}%
                 </span>
                 <div class="text-muted small mt-1">${data.fecha}</div>
             `;
-            btn.textContent = 'Evaluado';
-            btn.classList.remove('btn-outline-primary');
-            btn.classList.add('btn-outline-secondary');
+
+            const indTarjeta = document.getElementById(`indicador-tarjeta-${vacaId}`);
+            const indLista = document.getElementById(`indicador-lista-${vacaId}`);
+            if (indTarjeta) indTarjeta.innerHTML = badgeHtml;
+            if (indLista) indLista.innerHTML = badgeHtml;
+
+            document.querySelectorAll(`.semaforo-item [id$="${vacaId}"]`).forEach(function(el) {
+                const card = el.closest('.semaforo-card');
+                if (card) {
+                    card.classList.remove('semaforo-card-verde', 'semaforo-card-amarillo', 'semaforo-card-rojo');
+                    card.classList.add(`semaforo-card-${data.nivel_alerta}`);
+                }
+            });
+
+            document.querySelectorAll(`#btn-${vacaId}, #btn-lista-${vacaId}`).forEach(function(b) {
+                b.textContent = 'Evaluado';
+                b.disabled = true;
+                b.classList.remove('btn-outline-primary');
+                b.classList.add('btn-outline-secondary');
+            });
         })
         .catch(err => {
             if (err.ya_evaluado) {

@@ -9,6 +9,12 @@
     --mt-green: #009288;
     --mt-green-deep: #10312B;
 
+    --mt-estado-sano: #2e7d32;
+    --mt-estado-observacion: #f9a825;
+    --mt-estado-enferma: #c62828;
+    --mt-estado-tratamiento: #1565c0;
+    --mt-estado-aislado: #6a1b9a;
+
     --sidebar-width: 240px;
     --sidebar-collapsed: 60px;
 }
@@ -413,6 +419,17 @@ body.sidebar-is-collapsed .main-content.with-sidebar {
    ============================ */
 .semaforo-card {
     transition: transform 0.2s;
+    border: 2px solid var(--mt-gray);
+}
+
+.semaforo-card-verde {
+    border-color: #009288;
+}
+.semaforo-card-amarillo {
+    border-color: #BC955C;
+}
+.semaforo-card-rojo {
+    border-color: #9F2241;
 }
 
 .semaforo-card:hover {
@@ -479,6 +496,10 @@ body.sidebar-is-collapsed .main-content.with-sidebar {
    ============================ */
 .display-6 {
     font-weight: 600;
+}
+
+.main-content h2 {
+    color: var(--mt-primary);
 }
 
 a {
@@ -597,3 +618,30 @@ a:hover {
     background-color: var(--mt-primary);
     color: #fff;
 }
+
+.badge-estado-sano {
+    background-color: var(--mt-estado-sano) !important;
+    color: #fff !important;
+}
+.badge-estado-observacion {
+    background-color: var(--mt-estado-observacion) !important;
+    color: #212529 !important;
+}
+.badge-estado-enferma {
+    background-color: var(--mt-estado-enferma) !important;
+    color: #fff !important;
+}
+.badge-estado-tratamiento {
+    background-color: var(--mt-estado-tratamiento) !important;
+    color: #fff !important;
+}
+.badge-estado-aislado {
+    background-color: var(--mt-estado-aislado) !important;
+    color: #fff !important;
+}
+
+.border-estado-sano { border-color: var(--mt-estado-sano) !important; }
+.border-estado-observacion { border-color: var(--mt-estado-observacion) !important; }
+.border-estado-enferma { border-color: var(--mt-estado-enferma) !important; }
+.border-estado-tratamiento { border-color: var(--mt-estado-tratamiento) !important; }
+.border-estado-aislado { border-color: var(--mt-estado-aislado) !important; }

@@ -34,8 +34,9 @@
                 <select name="estado_salud" id="estado_salud" class="form-select">
                     <option value="Sano" {% if editando and vaca.estado_salud == "Sano" %}selected{% endif %}>Sano</option>
                     <option value="Observacion" {% if editando and vaca.estado_salud == "Observacion" %}selected{% endif %}>Observacion</option>
-                    <option value="Aislado" {% if editando and vaca.estado_salud == "Aislado" %}selected{% endif %}>Aislado</option>
+                    <option value="Enferma" {% if editando and vaca.estado_salud == "Enferma" %}selected{% endif %}>Enferma</option>
                     <option value="Tratamiento" {% if editando and vaca.estado_salud == "Tratamiento" %}selected{% endif %}>Tratamiento</option>
+                    <option value="Aislado" {% if editando and vaca.estado_salud == "Aislado" %}selected{% endif %}>Aislado</option>
                 </select>
             </div>
 

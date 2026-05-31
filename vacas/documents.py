@@ -1,6 +1,6 @@
 import mongoengine as me
 
-ESTADOS_SALUD = ("Sano", "Observacion", "Aislado", "Tratamiento")
+ESTADOS_SALUD = ("Sano", "Observacion", "Enferma", "Tratamiento", "Aislado")
 TIPOS_CONSULTA = ("Rutinaria", "Emergencia", "Seguimiento")
 
 

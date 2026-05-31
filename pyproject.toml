@@ -9,4 +9,5 @@ dependencies = [
     "numpy==1.26.4",
     "pyjwt==2.9.0",
     "python-dotenv==1.1.0",
+    "gunicorn==23.0.0",
 ]
