@@ -13,13 +13,17 @@
 <body>
     {% if user.is_authenticated %}
     {% include "sidebar.html" %}
-    <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('sidebar-overlay').classList.toggle('show');">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-    </button>
+    <div class="mobile-topbar">
+        <button class="mobile-topbar-toggle" onclick="document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('sidebar-overlay').classList.toggle('show');">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <span class="mobile-topbar-title" id="mobile-topbar-title"></span>
+        <img src="{% static 'img/mastitrack_logo.png' %}" alt="Mastitrack" class="mobile-topbar-logo">
+    </div>
     {% endif %}
 
     <div class="main-content {% if user.is_authenticated %}with-sidebar{% endif %}">

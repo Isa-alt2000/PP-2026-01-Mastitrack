@@ -85,8 +85,8 @@
 
     <div class="sidebar-footer">
         <div class="sidebar-user">
-            <span class="badge badge-rol badge-rol-{{ rol_usuario }}" id="sidebar-badge">{{ rol_usuario }}</span>
-            <span class="sidebar-link-text sidebar-username">{{ user.username }}</span>
+            <span class="badge badge-rol badge-rol-{{ rol_usuario }} sidebar-badge-collapsible" id="sidebar-badge">{{ rol_usuario }}</span>
+            <span class="sidebar-username">{{ user.username }}</span>
         </div>
         <a href="{% url 'logout' %}" class="sidebar-link sidebar-logout">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

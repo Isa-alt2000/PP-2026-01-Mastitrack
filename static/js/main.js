@@ -57,4 +57,27 @@ document.addEventListener('DOMContentLoaded', function () {
             overlay.classList.remove('show');
         });
     }
+
+    var topbarTitle = document.getElementById('mobile-topbar-title');
+    if (topbarTitle) {
+        var path = window.location.pathname;
+        var titulos = {
+            '/': 'Dashboard',
+            '/vacas/': 'Vacas',
+            '/bitacora/': 'Bitacora',
+            '/semaforo/': 'Semaforo',
+            '/calculadora/': 'Calculadora',
+            '/calculadora/parametros/': 'Parametros',
+            '/usuarios/': 'Usuarios',
+        };
+        var titulo = '';
+        var keys = Object.keys(titulos).sort(function(a, b) { return b.length - a.length; });
+        for (var i = 0; i < keys.length; i++) {
+            if (path.indexOf(keys[i]) === 0 || path === keys[i]) {
+                titulo = titulos[keys[i]];
+                break;
+            }
+        }
+        topbarTitle.textContent = titulo || 'Mastitrack';
+    }
 });
