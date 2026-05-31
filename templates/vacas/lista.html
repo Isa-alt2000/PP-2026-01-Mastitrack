@@ -28,7 +28,10 @@
 </div>
 
 <div class="row mb-3">
-    <div class="col-md-6">
+    <div class="col-lg-3 col-md-4 mb-2 mb-md-0">
+        <input type="text" id="busqueda-vacas" class="form-control" placeholder="Buscar por arete o nombre...">
+    </div>
+    <div class="col-lg-7 col-md-6 mb-2 mb-md-0">
         <form method="get" class="d-flex gap-2">
             <input type="hidden" name="vista" value="{{ vista }}">
             <select name="lote" class="form-select">
@@ -53,7 +56,7 @@
             <button type="submit" class="btn btn-outline-secondary">Filtrar</button>
         </form>
     </div>
-    <div class="col-md-6 text-end">
+    <div class="col-lg-2 col-md-2 text-end d-flex align-items-center justify-content-end">
         <span class="text-muted">{{ total_vacas }} vaca{{ total_vacas|pluralize:"s" }}</span>
     </div>
 </div>
@@ -71,7 +74,7 @@
     </thead>
     <tbody>
         {% for vaca in vacas %}
-        <tr>
+        <tr class="vaca-item" data-arete="{{ vaca.arete }}" data-nombre="{{ vaca.nombre }}">
             <td>{{ vaca.arete }}</td>
             <td>{{ vaca.nombre }}</td>
             <td>{{ vaca.lote }}</td>
@@ -103,7 +106,7 @@
     <div class="lote-container-body">
         <div class="row g-3">
             {% for vaca in lote_vacas %}
-            <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="col-sm-6 col-md-4 col-lg-3 vaca-item" data-arete="{{ vaca.arete }}" data-nombre="{{ vaca.nombre }}">
                 <div class="card vaca-card h-100 border-estado-{{ vaca.estado_salud|clase_estado }}" style="background-image: url('{% static 'img/vacas_fondo.png' %}');">
                     <div class="vaca-card-overlay">
                         <div class="vaca-card-content">
@@ -242,4 +245,29 @@
     color: #fff;
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('busqueda-vacas').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.vaca-item').forEach(function(el) {
+        const arete = el.dataset.arete.toLowerCase();
+        const nombre = el.dataset.nombre.toLowerCase();
+        if (arete.includes(q) || nombre.includes(q)) {
+            el.classList.remove('d-none');
+        } else {
+            el.classList.add('d-none');
+        }
+    });
+    document.querySelectorAll('.lote-container').forEach(function(lote) {
+        const visibles = lote.querySelectorAll('.vaca-item:not(.d-none)').length;
+        if (visibles > 0) {
+            lote.classList.remove('d-none');
+        } else {
+            lote.classList.add('d-none');
+        }
+    });
+});
+</script>
 {% endblock %}
