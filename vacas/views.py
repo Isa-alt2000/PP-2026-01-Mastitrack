@@ -152,6 +152,62 @@ def crear_visita(request, vaca_id):
 
 
 @login_required
+def registrar_sensor_vaca(request, vaca_id):
+    from bitacora.validators import RANGOS, validar_sensor_completo
+
+    vaca = Vaca.objects.get(id=vaca_id)
+
+    if request.method == "POST":
+        raw = {
+            "conteo_celulas_somaticas": request.POST.get("conteo_celulas_somaticas"),
+            "ph": request.POST.get("ph"),
+            "temperatura": request.POST.get("temperatura"),
+            "conductividad_electrica": request.POST.get("conductividad_electrica"),
+        }
+        datos, errores, banderas = validar_sensor_completo(raw)
+        if errores:
+            return render(request, "bitacora/form_sensor.html", {
+                "vaca": vaca,
+                "sin_ordeno": True,
+                "errores": errores,
+                "valores": raw,
+                "rangos": RANGOS,
+            })
+
+        diag = request.POST.get("diagnostico_mastitis", "")
+        diag_valor = None
+        if diag == "1":
+            diag_valor = True
+        elif diag == "0":
+            diag_valor = False
+
+        sensor = SensorLeche(
+            vaca=vaca,
+            conteo_celulas_somaticas=datos["conteo_celulas_somaticas"],
+            ph=datos["ph"],
+            temperatura=datos["temperatura"],
+            conductividad_electrica=datos["conductividad_electrica"],
+            banderas_calidad=banderas,
+            diagnostico_mastitis=diag_valor,
+            origen="manual",
+            fecha_medicion=datetime.now(),
+        )
+        sensor.save()
+        log.info(f"Sensor registrado (sin ordeno) para {vaca.arete} por {request.user.username}")
+
+        from semaforo.services import evaluar_vaca
+        evaluar_vaca(vaca, request.user.id)
+
+        return redirect("vacas:detalle", vaca_id=str(vaca.id))
+
+    return render(request, "bitacora/form_sensor.html", {
+        "vaca": vaca,
+        "sin_ordeno": True,
+        "rangos": RANGOS,
+    })
+
+
+@login_required
 def confirmar_mastitis(request, vaca_id):
     if not _puede_gestionar(request.user):
         return HttpResponseForbidden("No tienes permisos.")

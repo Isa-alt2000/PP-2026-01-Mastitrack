@@ -45,6 +45,10 @@
                 <span class="badge badge-bandera-{% if b.nivel == 'alto' or b.nivel == 'no_fiable' %}alto{% else %}sospechoso{% endif %} mb-1">{{ b.mensaje }}</span><br>
                 {% endfor %}
                 {% endif %}
+                {% if puede_gestionar %}
+                <hr>
+                <a href="{% url 'bitacora:editar_sensor' sensor.id %}" class="btn btn-sm btn-outline-secondary">Editar Sensor</a>
+                {% endif %}
                 {% else %}
                 <p>Sin datos de sensor.</p>
                 <a href="{% url 'bitacora:registrar_sensor' bitacora.id %}" class="btn btn-sm btn-outline-primary">Registrar Sensor</a>

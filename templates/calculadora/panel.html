@@ -256,8 +256,9 @@ function actualizarValores() {
     document.getElementById('val-total').textContent = sliderTotal.value;
 }
 
-function renderDesglosePrevencion(prev, vacasTotal) {
-    const ordenos = 60;
+function renderDesglosePrevencion(prev, vacasTotal, dias) {
+    const ordenos = dias * 2;
+    const pruebasCmt = (2 * dias / 30).toFixed(1);
     const tbody = document.getElementById('tbody-prevencion');
     tbody.innerHTML = `
         <tr>
@@ -269,20 +270,19 @@ function renderDesglosePrevencion(prev, vacasTotal) {
             <td class="text-end">$${fmt(prev.costo_toallas)}</td>
         </tr>
         <tr>
-            <td>Pruebas CMT<br><small class="text-muted">${vacasTotal} vacas x 2 pruebas/mes x $${PARAMS.insumos.prueba_cmt}/prueba</small></td>
+            <td>Pruebas CMT<br><small class="text-muted">${vacasTotal} vacas x ${pruebasCmt} pruebas (${dias} dias) x $${PARAMS.insumos.prueba_cmt}/prueba</small></td>
             <td class="text-end">$${fmt(prev.costo_cmt)}</td>
         </tr>
         <tr class="desglose-total">
-            <td>Total Prevencion Mensual</td>
+            <td>Total Prevencion (${dias} dias)</td>
             <td class="text-end">$${fmt(prev.total_prevencion)}</td>
         </tr>`;
 }
 
-function renderDesgloseReaccion(reac, vacasEnfermas) {
-    const diasTratamiento = 7;
+function renderDesgloseReaccion(reac, vacasEnfermas, dias) {
     const ltDia = PARAMS.produccion.produccion_promedio_vaca_dia;
-    const litrosPerdidos = vacasEnfermas * diasTratamiento * ltDia;
-    tbody = document.getElementById('tbody-reaccion');
+    const litrosPerdidos = vacasEnfermas * dias * ltDia;
+    const tbody = document.getElementById('tbody-reaccion');
     tbody.innerHTML = `
         <tr>
             <td>Antibioticos<br><small class="text-muted">${vacasEnfermas} vaca(s) x $${PARAMS.reaccion.precio_promedio_antibiotico}/tratamiento</small></td>
@@ -293,7 +293,7 @@ function renderDesgloseReaccion(reac, vacasEnfermas) {
             <td class="text-end">$${fmt(reac.costo_veterinario)}</td>
         </tr>
         <tr>
-            <td>Leche descartada<br><small class="text-muted">${vacasEnfermas} vaca(s) x ${diasTratamiento} dias x ${ltDia} lt/dia = ${fmt(litrosPerdidos)} lt x $${PARAMS.produccion.precio_venta_litro_leche}/lt</small></td>
+            <td>Leche descartada<br><small class="text-muted">${vacasEnfermas} vaca(s) x ${dias} dias x ${ltDia} lt/dia = ${fmt(litrosPerdidos)} lt x $${PARAMS.produccion.precio_venta_litro_leche}/lt</small></td>
             <td class="text-end">$${fmt(reac.leche_perdida)}</td>
         </tr>
         <tr>
@@ -301,7 +301,7 @@ function renderDesgloseReaccion(reac, vacasEnfermas) {
             <td class="text-end">$${fmt(reac.costo_reemplazo)}</td>
         </tr>
         <tr class="desglose-total">
-            <td>Total Reaccion</td>
+            <td>Total Reaccion (${dias} dias)</td>
             <td class="text-end">$${fmt(reac.total_reaccion)}</td>
         </tr>`;
 }
@@ -318,14 +318,14 @@ function cargarDatos() {
             document.getElementById('tarjeta-litros').textContent = `${data.litros_descartados.toLocaleString()} litros descartados`;
         });
 
-    fetch(`/calculadora/api/roi/?vacas_total=${total}&vacas_enfermas=${vacas}`)
+    fetch(`/calculadora/api/roi/?vacas_total=${total}&vacas_enfermas=${vacas}&dias=${dias}`)
         .then(r => r.json())
         .then(data => {
             document.getElementById('tarjeta-reaccion').textContent = `$${fmt(data.reaccion.total_reaccion)}`;
             document.getElementById('tarjeta-roi').textContent = `${data.roi_porcentaje.toFixed(1)}%`;
             document.getElementById('tarjeta-ahorro').textContent = `Ahorro: $${fmt(data.ahorro_estimado)}`;
-            renderDesglosePrevencion(data.prevencion, parseInt(total));
-            renderDesgloseReaccion(data.reaccion, parseInt(vacas));
+            renderDesglosePrevencion(data.prevencion, parseInt(total), parseInt(dias));
+            renderDesgloseReaccion(data.reaccion, parseInt(vacas), parseInt(dias));
         });
 
     fetch(`/calculadora/api/proyeccion/?infectadas=${vacas}&dias=${dias}&vacas_total=${total}`)
@@ -350,7 +350,7 @@ function cargarDatos() {
             });
         });
 
-    fetch(`/calculadora/api/prevencion-vs-reaccion/?vacas_total=${total}&vacas_enfermas=${vacas}`)
+    fetch(`/calculadora/api/prevencion-vs-reaccion/?vacas_total=${total}&vacas_enfermas=${vacas}&dias=${dias}`)
         .then(r => r.json())
         .then(data => {
             if (chartPVR) chartPVR.destroy();

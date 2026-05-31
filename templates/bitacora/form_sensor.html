@@ -3,7 +3,14 @@
 {% block title %}{% if editando %}Editar{% else %}Registrar{% endif %} Sensor - Mastitrack{% endblock %}
 
 {% block content %}
-<h2>{% if editando %}Editar{% else %}Registrar{% endif %} Datos de Sensor - {% if editando %}{{ sensor.vaca.arete }}{% else %}{{ bitacora.vaca.arete }}{% endif %}</h2>
+<h2>{% if editando %}Editar{% else %}Registrar{% endif %} Datos de Sensor - {% if editando %}{{ sensor.vaca.arete }}{% elif sin_ordeno %}{{ vaca.arete }}{% else %}{{ bitacora.vaca.arete }}{% endif %}</h2>
+
+{% if sin_ordeno %}
+<div class="alert alert-warning alert-dismissible fade show">
+    <strong>Sin ordeño asociado.</strong> Este registro de sensor no estará vinculado a ninguna bitacora de ordeño. Los datos de cumplimiento y fallas críticas no se incluirán en la evaluación de riesgo.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
 
 {% if errores %}
 <div class="alert alert-danger alert-dismissible fade show">
@@ -22,7 +29,7 @@
         <form method="post">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="conteo_celulas_somaticas" class="form-label">Conteo Celulas Somaticas (cel/mL)</label>
+                <label for="conteo_celulas_somaticas" class="form-label">Conteo Células Somáticas (cel/mL)</label>
                 <input type="number" name="conteo_celulas_somaticas" id="conteo_celulas_somaticas"
                        class="form-control {% if errores.conteo_celulas_somaticas %}is-invalid{% endif %}"
                        min="0" max="5000000" step="1"
@@ -77,7 +84,7 @@
             </div>
 
             <div class="mb-3">
-                <label for="conductividad_electrica" class="form-label">Conductividad Electrica (mS/cm)</label>
+                <label for="conductividad_electrica" class="form-label">Conductividad Eléctrica (mS/cm)</label>
                 <input type="number" name="conductividad_electrica" id="conductividad_electrica"
                        class="form-control {% if errores.conductividad_electrica %}is-invalid{% endif %}"
                        min="3.0" max="8.0" step="0.1"
@@ -111,6 +118,8 @@
             <button type="submit" class="btn btn-primary">Guardar</button>
             {% if editando %}
             <a href="{% url 'vacas:detalle' sensor.vaca.id %}" class="btn btn-secondary">Cancelar</a>
+            {% elif sin_ordeno %}
+            <a href="{% url 'vacas:detalle' vaca.id %}" class="btn btn-secondary">Cancelar</a>
             {% else %}
             <a href="{% url 'bitacora:detalle' bitacora.id %}" class="btn btn-secondary">Cancelar</a>
             {% endif %}

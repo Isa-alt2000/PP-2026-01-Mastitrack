@@ -60,7 +60,8 @@ def api_perdida_proyectada(request):
 def api_roi(request):
     vacas_total = int(request.GET.get("vacas_total", 50))
     vacas_enfermas = int(request.GET.get("vacas_enfermas", 5))
-    resultado = calcular_roi(vacas_total, vacas_enfermas)
+    dias = int(request.GET.get("dias", 30))
+    resultado = calcular_roi(vacas_total, vacas_enfermas, dias)
     return JsonResponse(resultado)
 
 
@@ -82,8 +83,9 @@ def api_proyeccion_contagios(request):
 def api_prevencion_vs_reaccion(request):
     vacas_total = int(request.GET.get("vacas_total", 50))
     vacas_enfermas = int(request.GET.get("vacas_enfermas", 5))
-    prevencion = calcular_costo_prevencion(vacas_total)
-    reaccion = calcular_costo_reaccion(vacas_enfermas)
+    dias = int(request.GET.get("dias", 30))
+    prevencion = calcular_costo_prevencion(vacas_total, dias)
+    reaccion = calcular_costo_reaccion(vacas_enfermas, dias)
     return JsonResponse({
         "prevencion": prevencion,
         "reaccion": reaccion,

@@ -70,6 +70,7 @@
                 <div class="d-flex flex-column gap-2">
                     <a href="{% url 'vacas:editar' vaca.id %}" class="btn btn-outline-secondary">Editar Vaca</a>
                     <a href="{% url 'vacas:crear_visita' vaca.id %}" class="btn btn-outline-primary">Registrar Visita Veterinaria</a>
+                    <a href="{% url 'vacas:registrar_sensor' vaca.id %}" class="btn btn-outline-primary">Registrar Sensor de Leche</a>
                     <button class="btn btn-outline-warning" id="btn-evaluar"
                             onclick="evaluarRiesgoVaca('{{ vaca.id }}')">Evaluar Riesgo</button>
                     <a href="{% url 'semaforo:historial' vaca.id %}" class="btn btn-outline-secondary">Historial de Riesgo</a>
@@ -139,6 +140,7 @@
                     <span class="vaca-detalle-valor">
                         <span class="badge badge-origen-{% if ultimo_sensor.origen == 'api' %}sensor{% else %}manual{% endif %}">{% if ultimo_sensor.origen == 'api' %}SENSOR{% else %}MANUAL{% endif %}</span>
                         {% if not ultimo_sensor.fiable %}<span class="badge badge-no-fiable ms-1">No fiable</span>{% endif %}
+                        {% if not ultimo_sensor.bitacora_ordeno %}<span class="badge bg-warning text-dark ms-1">Sin ordeno</span>{% endif %}
                     </span>
                 </div>
                 {% if ultimo_sensor.banderas_calidad %}
