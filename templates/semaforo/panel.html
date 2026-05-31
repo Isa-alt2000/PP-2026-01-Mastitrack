@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load core_tags %}
 
-{% block title %}Semaforo de Riesgo - Mastitrack{% endblock %}
+{% block title %}Semáforo de Riesgo - Mastitrack{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Semaforo de Riesgo de Mastitis</h2>
+    <h2>Semáforo de Riesgo de Mastítis</h2>
     <div class="btn-group btn-group-sm" role="group">
         <button class="btn d-inline-flex align-items-center justify-content-center btn-primary" id="btn-vista-tarjetas" onclick="cambiarVista('tarjetas')">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -176,7 +176,11 @@ document.getElementById('busqueda-semaforo').addEventListener('input', function(
         const arete = el.dataset.arete.toLowerCase();
         const nombre = el.dataset.nombre.toLowerCase();
         const visible = arete.includes(q) || nombre.includes(q);
-        el.style.display = visible ? '' : 'none';
+        if (visible) {
+            el.classList.remove('d-none');
+        } else {
+            el.classList.add('d-none');
+        }
     });
 });
 

@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load core_tags %}
 
-{% block title %}Bitacora de Ordeno - Mastitrack{% endblock %}
+{% block title %}Bitácora de Ordeño - Mastitrack{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Bitacora de Ordeno</h2>
-    <a href="{% url 'bitacora:crear' %}" class="btn btn-primary">Nuevo Ordeno</a>
+    <h2>Bitácora de Ordeño</h2>
+    <a href="{% url 'bitacora:crear' %}" class="btn btn-primary">Nuevo Ordeño</a>
 </div>
 
 <div class="row mb-3">
@@ -158,7 +158,11 @@ document.getElementById('busqueda-bitacora').addEventListener('input', function(
     document.querySelectorAll('.bitacora-item').forEach(function(el) {
         const arete = el.dataset.arete.toLowerCase();
         const nombre = el.dataset.nombre.toLowerCase();
-        el.style.display = (arete.includes(q) || nombre.includes(q)) ? '' : 'none';
+        if (arete.includes(q) || nombre.includes(q)) {
+            el.classList.remove('d-none');
+        } else {
+            el.classList.add('d-none');
+        }
     });
 });
 </script>
