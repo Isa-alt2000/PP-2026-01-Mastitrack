@@ -30,8 +30,14 @@ pp-mastitis/
 │
 ├── semaforo/                  # App: semaforo de riesgo de mastitis
 │   ├── documents.py           # RiesgoMastitisHistorico, EventoRiesgoOperativo
-│   ├── inference.py           # Red neuronal simulada (6->4->1, sigmoide)
+│   ├── inference.py           # Inferencia combinada (modelo base + entrenado)
+│   ├── services.py            # Logica centralizada de evaluacion
 │   ├── views.py               # Panel, evaluar riesgo via AJAX, historial
+│   └── urls.py
+│
+├── entrenamiento/             # App: gestion de modelos de red neuronal
+│   ├── documents.py           # ModeloEntrenado (MongoDB)
+│   ├── views.py               # Panel, exportar CSV, cargar/activar/desactivar/eliminar modelos
 │   └── urls.py
 │
 ├── calculadora/               # App: calculadora de perdidas y ROI
@@ -56,6 +62,14 @@ pp-mastitis/
 │   ├── dashboard.html         # Panel general con tarjetas resumen
 │   └── registration/login.html
 │
+├── modelos/                   # Modelos .joblib cargados desde entrenamiento
+│
+├── training/                  # Sub-repo de entrenamiento (venv independiente)
+│   ├── entrenar.py            # Script con clases EntrenadorKaggle/EntrenadorMastitrack
+│   ├── pyproject.toml         # Dependencias de entrenamiento (pandas, scikit-learn)
+│   ├── datasets/              # Datasets CSV (Kaggle + exportados de la app)
+│   └── output/                # Modelos .joblib generados
+│
 └── static/
     ├── css/main.css           # Paleta institucional, sidebar, cards, badges
     ├── js/main.js             # CSRF, fetchPost, sidebar toggle
@@ -69,7 +83,7 @@ pp-mastitis/
 - **Base de datos de autenticacion**: SQLite (django.contrib.auth)
 - **Frontend**: Django Templates + Bootstrap 5 (CDN) + Chart.js
 - **Cifrado**: Fernet (cryptography)
-- **Inferencia**: NumPy (red neuronal con pesos ficticios)
+- **Inferencia**: NumPy + scikit-learn (modelo base + modelo entrenado via joblib)
 - **Auth API**: PyJWT (tokens JWT para endpoints de sensores)
 - **Gestor de dependencias**: uv
 
@@ -84,6 +98,7 @@ pp-mastitis/
 | riesgo_mastitis_historico  | semaforo     | RiesgoMastitisHistorico      |
 | eventos_riesgo_operativo   | semaforo     | EventoRiesgoOperativo        |
 | parametros_financieros     | calculadora  | ParametrosFinancieros        |
+| modelos_entrenados         | entrenamiento| ModeloEntrenado              |
 
 ## Roles de Usuario
 
@@ -100,18 +115,38 @@ Los roles se gestionan mediante grupos de Django (`administrador`, `operador`) +
 ### 1. Semaforo de Riesgo (IA + Estadistica Multivariada)
 
 - Toma datos de `SensorLeche` y metricas de `BitacoraOrdeno`.
-- Ejecuta inferencia con una red neuronal de una capa oculta (6 entradas -> 4 neuronas -> 1 salida sigmoide).
+- Inferencia combinada: 60% modelo base (4 neuronas especializadas) + 40% modelo entrenado (.joblib). Si no hay modelo entrenado activo, usa solo el base.
 - Clasifica el riesgo: verde (<0.3), amarillo (0.3-0.7), rojo (>0.7).
-- Guarda el resultado en `riesgo_mastitis_historico`.
-- Consolida variables en `eventos_riesgo_operativo` para analisis posterior.
+- La evaluacion se dispara automaticamente al registrar un sensor, al editar el ultimo sensor, y al activar/desactivar un modelo.
+- Logica centralizada en `semaforo/services.py`: `evaluar_vaca()`, `hay_datos_nuevos()`, `reevaluar_todas()`.
+- Guarda el resultado en `riesgo_mastitis_historico` y consolida en `eventos_riesgo_operativo`.
+- Actualiza `Vaca.diagnostico_mastitis` automaticamente: rojo → `sospecha_calculada`, no rojo + descartada → limpia.
 
-Variables de entrada de la red neuronal:
+Variables de entrada (6 features normalizadas):
 - Conteo de celulas somaticas (normalizado / 1,000,000)
 - Conductividad electrica (normalizado / 10)
 - pH (centrado en 6.0)
 - Temperatura (centrada en 37.0)
-- Porcentaje de incumplimiento del ordeno
+- Porcentaje de incumplimiento del ordeno ((100 - %) / 100)
 - Fallas criticas (normalizado / 5)
+
+### 1b. Diagnostico de Mastitis
+
+- Campo `diagnostico_mastitis` en `Vaca` con tres estados: `confirmado`, `sospecha_calculada`, `sospecha_descartada`.
+- `sospecha_calculada` se establece automaticamente cuando el semaforo evalua como rojo.
+- `sospecha_descartada` persiste hasta el siguiente escaneo de leche (se limpia si el resultado no es rojo).
+- `confirmado` solo se establece manualmente (veterinario/operador) y no se sobreescribe por el modelo.
+- Al confirmar o descartar, tambien se actualiza `SensorLeche.diagnostico_mastitis` del ultimo sensor (para datos de entrenamiento).
+- El dashboard muestra tarjetas de vacas con diagnostico activo (confirmado y sospecha) arriba de las evaluaciones de riesgo.
+
+### 1c. Gestion de Modelos (Entrenamiento)
+
+- Modulo `entrenamiento` para administrar modelos de red neuronal.
+- Exportacion de datos como CSV filtrable por rango de fechas (sensor + bitacora + diagnostico).
+- Carga de modelos `.joblib` con validacion al subir (deserializacion, `predict_proba`, 6 features).
+- Validacion al activar: si el modelo no carga correctamente, no se activa y se muestra error.
+- Al activar un modelo, se re-evaluan automaticamente todas las vacas con datos de sensor.
+- Historial de modelos con acciones de activar, desactivar y eliminar.
 
 ### 2. Bitacora de Ordeno (BD NoSQL + Innovacion Social)
 
@@ -194,10 +229,26 @@ Datos de leche (SensorLeche)
         +---> Banderas de calidad (sospechoso / alto / no_fiable)
         |
         v
-Admin ejecuta evaluacion de riesgo (inference.py)
+Evaluacion automatica (semaforo/services.py)
         |
-        +---> RiesgoMastitisHistorico (resultado de la NN)
+        +---> Inferencia combinada (60% base + 40% modelo entrenado)
+        +---> RiesgoMastitisHistorico (resultado)
         +---> EventoRiesgoOperativo (consolidado para analisis)
+        +---> Vaca.diagnostico_mastitis (sospecha_calculada si rojo)
+        |
+        v
+Veterinario/operador confirma o descarta (vacas/views.py)
+        |
+        +---> Vaca.diagnostico_mastitis (confirmado / sospecha_descartada)
+        +---> SensorLeche.diagnostico_mastitis (True / False para entrenamiento)
+        |
+        v
+Exportar datos + reentrenar (entrenamiento/ + training/)
+        |
+        +---> CSV con diagnostico_mastitis como label
+        +---> Nuevo modelo .joblib
+        +---> Cargar y activar en la app
+        +---> Re-evaluacion automatica de todas las vacas
         |
         v
 Calculadora consume parametros financieros + datos de riesgo

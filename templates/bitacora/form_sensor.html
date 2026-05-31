@@ -95,6 +95,19 @@
                 </div>
             </div>
 
+            <div class="mb-3">
+                <label for="diagnostico_mastitis" class="form-label">Diagnostico de mastitis</label>
+                <select name="diagnostico_mastitis" id="diagnostico_mastitis" class="form-select">
+                    <option value="" {% if valores.diagnostico_mastitis == None or valores.diagnostico_mastitis == "" %}selected{% endif %}>Sin evaluar</option>
+                    <option value="0" {% if valores.diagnostico_mastitis == "0" or valores.diagnostico_mastitis == False %}selected{% endif %}>Sano (sin mastitis)</option>
+                    <option value="1" {% if valores.diagnostico_mastitis == "1" or valores.diagnostico_mastitis == True %}selected{% endif %}>Mastitis confirmada</option>
+                </select>
+                <div class="form-text">
+                    Indica si un veterinario confirmo o descarto mastitis para esta medicion.
+                    Dejar en "Sin evaluar" si aun no hay diagnostico.
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary">Guardar</button>
             {% if editando %}
             <a href="{% url 'vacas:detalle' sensor.vaca.id %}" class="btn btn-secondary">Cancelar</a>

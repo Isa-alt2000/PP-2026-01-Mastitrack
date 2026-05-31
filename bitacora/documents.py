@@ -105,6 +105,7 @@ class SensorLeche(me.Document):
     origen = me.StringField(choices=ORIGENES_SENSOR, default="manual")
     fiable = me.BooleanField(default=True)
     banderas_calidad = me.ListField(me.DictField())
+    diagnostico_mastitis = me.BooleanField(null=True, default=None)
 
     meta = {"collection": "sensores_leche", "ordering": ["-fecha_medicion"]}
 

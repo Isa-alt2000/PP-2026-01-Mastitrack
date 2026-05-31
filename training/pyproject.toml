@@ -1,0 +1,12 @@
+[project]
+name = "red-neuronal"
+version = "0.1.0"
+description = "Entrenamiento de modelo de riesgo de mastitis para Mastitrack"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pandas",
+    "numpy>=2.4.6",
+    "scikit-learn>=1.6.1",
+    "joblib>=1.5.3",
+]

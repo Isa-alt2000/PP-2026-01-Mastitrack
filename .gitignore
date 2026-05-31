@@ -5,3 +5,8 @@ __pycache__/
 staticfiles/
 *.egg-info/
 .venv/
+training/.venv
+training/output/*
+training/datasets/*
+!training/output/.gitkeep
+!training/datasets/.gitkeep

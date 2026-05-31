@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
             '/vacas/': 'Vacas',
             '/bitacora/': 'Bitacora',
             '/semaforo/': 'Semaforo',
+            '/entrenamiento/': 'Entrenamiento',
             '/calculadora/': 'Calculadora',
             '/calculadora/parametros/': 'Parametros',
             '/usuarios/': 'Usuarios',

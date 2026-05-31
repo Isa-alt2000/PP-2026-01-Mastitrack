@@ -41,6 +41,58 @@
     </div>
 </div>
 
+{% if puede_gestionar and vacas_confirmadas %}
+<div class="card mb-4 border-danger">
+    <div class="card-header bg-danger bg-opacity-10">
+        <h5 class="mb-0 text-danger">Mastitis Confirmada</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for vaca in vacas_confirmadas %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                <div class="card border-danger h-100">
+                    <div class="card-body text-center py-3">
+                        <h6 class="mb-1">{{ vaca.arete }}</h6>
+                        <p class="text-muted small mb-2">{{ vaca.nombre }}</p>
+                        <span class="badge bg-danger">Confirmada</span>
+                        <div class="mt-2">
+                            <a href="{% url 'vacas:detalle' vaca.id %}" class="btn btn-sm btn-outline-danger">Ver detalle</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if puede_gestionar and vacas_sospecha %}
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning bg-opacity-10">
+        <h5 class="mb-0 text-warning">Sospecha de Mastitis</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for vaca in vacas_sospecha %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                <div class="card border-warning h-100">
+                    <div class="card-body text-center py-3">
+                        <h6 class="mb-1">{{ vaca.arete }}</h6>
+                        <p class="text-muted small mb-2">{{ vaca.nombre }}</p>
+                        <span class="badge bg-warning text-dark">Sospecha calculada</span>
+                        <div class="mt-2">
+                            <a href="{% url 'vacas:detalle' vaca.id %}" class="btn btn-sm btn-outline-warning">Ver detalle</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% if puede_gestionar and ultimos_riesgos %}
 <div class="card">
     <div class="card-header">

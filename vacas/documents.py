@@ -2,6 +2,11 @@ import mongoengine as me
 
 ESTADOS_SALUD = ("Sano", "Observacion", "Enferma", "Tratamiento", "Aislado")
 TIPOS_CONSULTA = ("Rutinaria", "Emergencia", "Seguimiento")
+ESTADOS_DIAGNOSTICO_MASTITIS = (
+    "confirmado",
+    "sospecha_calculada",
+    "sospecha_descartada",
+)
 
 
 class Vaca(me.Document):
@@ -10,6 +15,9 @@ class Vaca(me.Document):
     fecha_nacimiento = me.DateTimeField()
     lote = me.StringField()
     estado_salud = me.StringField(choices=ESTADOS_SALUD, default="Sano")
+    diagnostico_mastitis = me.StringField(
+        choices=ESTADOS_DIAGNOSTICO_MASTITIS, null=True, default=None
+    )
     fecha_aislamiento = me.DateTimeField()
     activa = me.BooleanField(default=True)
     razon_baja = me.StringField()

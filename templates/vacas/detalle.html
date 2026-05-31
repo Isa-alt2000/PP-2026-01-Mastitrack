@@ -32,6 +32,20 @@
                         </span>
                     </span>
                 </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Diagnostico mastitis</span>
+                    <span class="vaca-detalle-valor">
+                        {% if vaca.diagnostico_mastitis == "confirmado" %}
+                        <span class="badge bg-danger">Confirmada</span>
+                        {% elif vaca.diagnostico_mastitis == "sospecha_calculada" %}
+                        <span class="badge bg-warning text-dark">Sospecha calculada</span>
+                        {% elif vaca.diagnostico_mastitis == "sospecha_descartada" %}
+                        <span class="badge bg-info text-dark">Sospecha descartada</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Sin diagnostico</span>
+                        {% endif %}
+                    </span>
+                </div>
                 {% if vaca.fecha_aislamiento %}
                 <div class="vaca-detalle-campo">
                     <span class="vaca-detalle-label">Fecha aislamiento</span>
@@ -59,6 +73,21 @@
                     <button class="btn btn-outline-warning" id="btn-evaluar"
                             onclick="evaluarRiesgoVaca('{{ vaca.id }}')">Evaluar Riesgo</button>
                     <a href="{% url 'semaforo:historial' vaca.id %}" class="btn btn-outline-secondary">Historial de Riesgo</a>
+                </div>
+            </div>
+            <div class="card-body border-top pt-3">
+                <p class="text-muted small mb-2">Diagnostico de mastitis</p>
+                <div class="d-flex flex-column gap-2">
+                    {% if vaca.diagnostico_mastitis == "sospecha_calculada" %}
+                    <a href="{% url 'vacas:confirmar_mastitis' vaca.id %}" class="btn btn-danger">Confirmar mastitis</a>
+                    <a href="{% url 'vacas:descartar_mastitis' vaca.id %}" class="btn btn-outline-success">Descartar sospecha</a>
+                    {% elif vaca.diagnostico_mastitis == "confirmado" %}
+                    <a href="{% url 'vacas:limpiar_diagnostico' vaca.id %}" class="btn btn-outline-secondary">Limpiar diagnostico</a>
+                    {% elif vaca.diagnostico_mastitis == "sospecha_descartada" %}
+                    <span class="text-muted small">Se limpiara automaticamente en el proximo escaneo de leche.</span>
+                    {% else %}
+                    <a href="{% url 'vacas:confirmar_mastitis' vaca.id %}" class="btn btn-outline-danger">Confirmar mastitis manualmente</a>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -92,6 +121,18 @@
                 <div class="vaca-detalle-campo">
                     <span class="vaca-detalle-label">Fecha</span>
                     <span class="vaca-detalle-valor">{{ ultimo_sensor.fecha_medicion|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="vaca-detalle-campo">
+                    <span class="vaca-detalle-label">Diagnostico mastitis</span>
+                    <span class="vaca-detalle-valor">
+                        {% if ultimo_sensor.diagnostico_mastitis == True %}
+                        <span class="badge bg-danger">Confirmada</span>
+                        {% elif ultimo_sensor.diagnostico_mastitis == False %}
+                        <span class="badge bg-success">Descartada</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Sin evaluar</span>
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="vaca-detalle-campo">
                     <span class="vaca-detalle-label">Origen</span>

@@ -5,8 +5,10 @@ Proyecto integrador semestral (Proyecto Prototipico) de alumnos de cuarto semest
 
 ## Modulos
 
-- **Semaforo de riesgo**: evalua la probabilidad de mastitis por vaca usando una red neuronal con salida sigmoide. Clasifica en verde, amarillo o rojo.
-- **Bitacora de ordeno**: registro paso a paso del proceso de ordeno con cálculo automatico de metricas de cumplimiento y captura de datos de sensores de leche
+- **Semaforo de riesgo**: evalua la probabilidad de mastitis por vaca combinando un modelo base calibrado con un modelo de red neuronal entrenado. Clasifica en verde, amarillo o rojo. La evaluacion se dispara automaticamente al registrar datos de sensor.
+- **Entrenamiento**: modulo de gestion de modelos de red neuronal. Permite exportar datos como CSV, cargar modelos `.joblib` entrenados externamente, y activar/desactivar modelos con re-evaluacion automatica de todas las vacas.
+- **Diagnostico de mastitis**: sistema de seguimiento por vaca con estados automaticos (`sospecha_calculada` por el modelo) y manuales (`confirmado`, `sospecha_descartada` por veterinario/operador). Se muestra en dashboard y detalle de vaca.
+- **Bitacora de ordeno**: registro paso a paso del proceso de ordeno con calculo automatico de metricas de cumplimiento y captura de datos de sensores de leche.
 - **Calculadora de perdidas y ROI**: simulacion de perdidas proyectadas, comparativo prevencion vs reaccion y calculo de retorno de inversion. Los calculos se ejecutan en Django y se consumen via AJAX.
 - **API de sensores**: endpoint JWT para recibir lecturas automaticas de sensores de leche, con validacion de rangos, banderas de calidad y marcado de fiabilidad.
 
@@ -20,7 +22,7 @@ Proyecto integrador semestral (Proyecto Prototipico) de alumnos de cuarto semest
 | Frontend     | Django Templates + Bootstrap 5 |
 | Graficos     | Chart.js                       |
 | Cifrado      | Fernet (cryptography)          |
-| Inferencia   | NumPy                          |
+| Inferencia   | NumPy + scikit-learn (joblib)  |
 | Auth API     | PyJWT                          |
 
 ## Requisitos previos
@@ -76,20 +78,37 @@ uv run manage.py runserver
 pp-mastitis/
 ├── mastitis_project/   # Configuracion Django
 ├── core/               # Utilidades: crypto, context processors, dashboard
-├── vacas/              # Gestion de vacas y visitas veterinarias
+├── vacas/              # Gestion de vacas, visitas y diagnostico de mastitis
 ├── bitacora/           # Bitacora de ordeno, sensores y validadores
-├── semaforo/           # Semaforo de riesgo (inferencia NN)
+├── semaforo/           # Semaforo de riesgo (inferencia + servicios)
+├── entrenamiento/      # Gestion de modelos: exportar CSV, cargar/activar modelos
 ├── calculadora/        # Calculadora ROI y parametros financieros
 ├── api/                # API JWT para sensores de leche
 ├── usuarios/           # Gestion de usuarios y roles
+├── modelos/            # Modelos .joblib cargados (gitignored)
 ├── templates/          # Templates HTML
 ├── static/             # CSS, JS e imagenes
+├── training/           # Sub-repo de entrenamiento de red neuronal (venv independiente)
 └── docs/               # Documentacion
 ```
+
+### Sub-repositorio de entrenamiento (`training/`)
+
+La carpeta `training/` contiene el entorno de entrenamiento de la red neuronal, con su propio `pyproject.toml` y entorno virtual. Esto separa las dependencias pesadas de entrenamiento (pandas, scikit-learn completo) de las de la webapp.
+
+```bash
+cd training
+uv sync
+uv run python entrenar.py --kaggle
+uv run python entrenar.py --mastitrack
+```
+
+El modelo generado en `training/output/` se carga en la app desde el modulo de Entrenamiento (`/entrenamiento/`). Ver [training/README.md](training/README.md) para documentacion detallada.
 
 Ver [docs/architecture.md](docs/architecture.md) para documentacion detallada.
 Ver [docs/api.md](docs/api.md) para documentacion de la API.
 Ver [docs/databases.md](docs/databases.md) para esquema de bases de datos.
+Ver [docs/modelo.md](docs/modelo.md) para documentacion del modelo de inferencia.
 
 ## Variables de entorno
 

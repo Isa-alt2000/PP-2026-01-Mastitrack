@@ -1,9 +1,13 @@
 import numpy as np
 
-VERSION_MODELO = "rn_v1"
+_VERSION_BASE = "rn_v1_base"
+
+_modelo_joblib = None
+_version_actual = _VERSION_BASE
+_inicializado = False
 
 
-def sigmoide(x):
+def _sigmoide(x):
     return 1.0 / (1.0 + np.exp(-x))
 
 
@@ -15,6 +19,59 @@ def clasificar_nivel(probabilidad: float) -> str:
     return "rojo"
 
 
+def recargar_modelo():
+    import logging
+
+    global _modelo_joblib, _version_actual, _inicializado
+    logger = logging.getLogger(__name__)
+    _inicializado = True
+
+    try:
+        from django.conf import settings
+        from entrenamiento.documents import ModeloEntrenado
+
+        activo = ModeloEntrenado.objects(activo=True).first()
+        if activo:
+            ruta = settings.MODELOS_DIR / activo.archivo
+            if not ruta.exists():
+                logger.error("Modelo activo '%s' no encontrado en disco: %s", activo.nombre, ruta)
+            else:
+                import joblib
+
+                _modelo_joblib = joblib.load(ruta)
+                _version_actual = activo.nombre
+                logger.info("Modelo cargado: %s (%s)", activo.nombre, ruta.name)
+                return
+    except Exception:
+        logger.exception("Error al cargar modelo entrenado")
+
+    _modelo_joblib = None
+    _version_actual = _VERSION_BASE
+
+
+def validar_modelo(ruta):
+    import joblib
+
+    modelo = joblib.load(ruta)
+    if not hasattr(modelo, "predict_proba"):
+        raise ValueError("El modelo no tiene metodo predict_proba.")
+    import numpy as np
+
+    x_prueba = np.zeros((1, 6))
+    modelo.predict_proba(x_prueba)
+    return modelo
+
+
+def _asegurar_inicializado():
+    if not _inicializado:
+        recargar_modelo()
+
+
+def get_version_modelo():
+    _asegurar_inicializado()
+    return _version_actual
+
+
 def predecir_riesgo(
     conteo_celulas_somaticas: int,
     conductividad_electrica: float,
@@ -23,11 +80,8 @@ def predecir_riesgo(
     porcentaje_cumplimiento: float,
     fallas_criticas: int,
 ) -> dict:
-    """
-    Simula la inferencia de una red neuronal ya entrenada.
-    En produccion, se cargaria el modelo real (pesos .npy o similar).
-    Aqui se usan pesos ficticios para demostrar el flujo.
-    """
+    _asegurar_inicializado()
+
     x = np.array([
         conteo_celulas_somaticas / 1_000_000,
         conductividad_electrica / 10.0,
@@ -37,23 +91,36 @@ def predecir_riesgo(
         fallas_criticas / 5.0,
     ])
 
-    # Pesos ficticios de una red de una capa oculta (6 -> 4 -> 1)
-    w1 = np.array([
-        [0.8, 0.3, 0.5, 0.2, 0.6, 0.4],
-        [0.2, 0.7, 0.3, 0.5, 0.4, 0.6],
-        [0.5, 0.4, 0.8, 0.3, 0.7, 0.2],
-        [0.3, 0.6, 0.2, 0.7, 0.5, 0.8],
-    ])
-    b1 = np.array([-0.5, -0.3, -0.4, -0.6])
+    prob_base = _inferencia_base(x)
 
-    w2 = np.array([[0.7, 0.5, 0.6, 0.8]])
-    b2 = np.array([-1.0])
-
-    h = sigmoide(w1 @ x + b1)
-    salida = sigmoide(w2 @ h + b2)
-    probabilidad = float(salida[0])
+    if _modelo_joblib is not None:
+        try:
+            prob_modelo = float(
+                _modelo_joblib.predict_proba(x.reshape(1, -1))[0][1]
+            )
+            probabilidad = prob_base * 0.6 + prob_modelo * 0.4
+        except Exception:
+            probabilidad = prob_base
+    else:
+        probabilidad = prob_base
 
     return {
         "probabilidad": round(probabilidad, 4),
         "nivel_alerta": clasificar_nivel(probabilidad),
     }
+
+
+def _inferencia_base(x):
+    w1 = np.array([
+        [5.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 3.0, 2.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 5.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 3.0, 4.0],
+    ])
+    b1 = np.array([-2.0, -3.5, -1.5, -1.5])
+    w2 = np.array([[2.5, 1.5, 1.0, 0.8]])
+    b2 = np.array([-3.0])
+
+    h = _sigmoide(w1 @ x + b1)
+    salida = _sigmoide(w2 @ h + b2)
+    return float(salida[0])

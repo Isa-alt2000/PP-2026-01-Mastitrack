@@ -78,7 +78,10 @@ erDiagram
         datetime fecha_nacimiento
         string lote
         string estado_salud
+        string diagnostico_mastitis
         datetime fecha_aislamiento
+        bool activa
+        string razon_baja
     }
 
     visitas_veterinarias {
@@ -114,6 +117,7 @@ erDiagram
         string origen
         bool fiable
         list banderas_calidad
+        bool diagnostico_mastitis
     }
 
     riesgo_mastitis_historico {
@@ -150,6 +154,16 @@ erDiagram
         dict precios_insumos
         dict costos_reaccion
         dict valor_produccion
+    }
+
+    modelos_entrenados {
+        ObjectId _id PK
+        string nombre
+        string archivo
+        datetime fecha_carga
+        string usuario
+        bool activo
+        string notas
     }
 
     vacas ||--o{ visitas_veterinarias : "tiene"
@@ -224,3 +238,6 @@ metricas: {
 - `costo_total_cifrado` en `visitas_veterinarias` almacena el costo cifrado con Fernet. El valor real se obtiene/guarda mediante `get_costo()` / `set_costo()`.
 - `parametros_financieros` actua como singleton: `obtener_vigentes()` retorna el primer documento o crea uno con valores por defecto.
 - `eventos_riesgo_operativo` desnormaliza campos de otras colecciones para facilitar reportes sin joins.
+- `vacas.diagnostico_mastitis` tiene tres estados posibles: `confirmado` (veterinario confirma), `sospecha_calculada` (el modelo detecto riesgo rojo), `sospecha_descartada` (veterinario descarto la sospecha). Valor `null` indica sin diagnostico.
+- `sensores_leche.diagnostico_mastitis` es un booleano nullable usado como label de entrenamiento: `null` = sin evaluar, `true` = mastitis confirmada, `false` = descartada. Se actualiza automaticamente al confirmar/descartar desde el detalle de vaca.
+- `modelos_entrenados` registra los modelos `.joblib` cargados. Solo uno puede estar `activo=true` a la vez. El campo `archivo` es el nombre del fichero en el directorio `modelos/`.

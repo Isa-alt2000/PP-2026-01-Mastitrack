@@ -1,13 +1,16 @@
 [project]
 name = "pp-mastitis"
 version = "0.1.0"
+description = "WebApp Mastitrack enfocada en bitácora y prevención de la mastitis bovina"
 requires-python = ">=3.12"
 dependencies = [
     "cryptography==44.0.0",
     "django==4.2.17",
     "mongoengine==0.29.1",
-    "numpy==1.26.4",
+    "numpy>=2.4.6",
     "pyjwt==2.9.0",
     "python-dotenv==1.1.0",
     "gunicorn==23.0.0",
+    "joblib>=1.5.3",
+    "scikit-learn>=1.6.1",
 ]

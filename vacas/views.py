@@ -7,7 +7,7 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
 
 from bitacora.documents import SensorLeche
-from vacas.documents import Vaca, VisitaVeterinaria
+from vacas.documents import ESTADOS_DIAGNOSTICO_MASTITIS, Vaca, VisitaVeterinaria
 
 POR_PAGINA = 25
 
@@ -146,6 +146,44 @@ def crear_visita(request, vaca_id):
         visita.save()
         return redirect("vacas:detalle", vaca_id=str(vaca.id))
     return render(request, "vacas/form_visita.html", {"vaca": vaca})
+
+
+@login_required
+def confirmar_mastitis(request, vaca_id):
+    if not _puede_gestionar(request.user):
+        return HttpResponseForbidden("No tienes permisos.")
+    vaca = Vaca.objects.get(id=vaca_id)
+    vaca.diagnostico_mastitis = "confirmado"
+    vaca.save()
+    ultimo_sensor = SensorLeche.objects(vaca=vaca).order_by("-fecha_medicion").first()
+    if ultimo_sensor:
+        ultimo_sensor.diagnostico_mastitis = True
+        ultimo_sensor.save()
+    return redirect("vacas:detalle", vaca_id=str(vaca.id))
+
+
+@login_required
+def descartar_mastitis(request, vaca_id):
+    if not _puede_gestionar(request.user):
+        return HttpResponseForbidden("No tienes permisos.")
+    vaca = Vaca.objects.get(id=vaca_id)
+    vaca.diagnostico_mastitis = "sospecha_descartada"
+    vaca.save()
+    ultimo_sensor = SensorLeche.objects(vaca=vaca).order_by("-fecha_medicion").first()
+    if ultimo_sensor:
+        ultimo_sensor.diagnostico_mastitis = False
+        ultimo_sensor.save()
+    return redirect("vacas:detalle", vaca_id=str(vaca.id))
+
+
+@login_required
+def limpiar_diagnostico(request, vaca_id):
+    if not _puede_gestionar(request.user):
+        return HttpResponseForbidden("No tienes permisos.")
+    vaca = Vaca.objects.get(id=vaca_id)
+    vaca.diagnostico_mastitis = None
+    vaca.save()
+    return redirect("vacas:detalle", vaca_id=str(vaca.id))
 
 
 @login_required

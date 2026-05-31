@@ -114,6 +114,13 @@ def registrar_sensor(request, bitacora_id):
                 "rangos": RANGOS,
             })
 
+        diag = request.POST.get("diagnostico_mastitis", "")
+        diag_valor = None
+        if diag == "1":
+            diag_valor = True
+        elif diag == "0":
+            diag_valor = False
+
         sensor = SensorLeche(
             vaca=bitacora.vaca,
             bitacora_ordeno=bitacora,
@@ -122,10 +129,15 @@ def registrar_sensor(request, bitacora_id):
             temperatura=datos["temperatura"],
             conductividad_electrica=datos["conductividad_electrica"],
             banderas_calidad=banderas,
+            diagnostico_mastitis=diag_valor,
             origen="manual",
             fecha_medicion=datetime.now(),
         )
         sensor.save()
+
+        from semaforo.services import evaluar_vaca
+        evaluar_vaca(bitacora.vaca, request.user.id)
+
         return redirect("bitacora:detalle", bitacora_id=str(bitacora.id))
     return render(request, "bitacora/form_sensor.html", {
         "bitacora": bitacora,
@@ -159,6 +171,14 @@ def editar_sensor(request, sensor_id):
                 "rangos": RANGOS,
             })
 
+        diag = request.POST.get("diagnostico_mastitis", "")
+        if diag == "1":
+            sensor.diagnostico_mastitis = True
+        elif diag == "0":
+            sensor.diagnostico_mastitis = False
+        else:
+            sensor.diagnostico_mastitis = None
+
         sensor.conteo_celulas_somaticas = datos["conteo_celulas_somaticas"]
         sensor.ph = datos["ph"]
         sensor.temperatura = datos["temperatura"]
@@ -166,6 +186,12 @@ def editar_sensor(request, sensor_id):
         sensor.banderas_calidad = banderas
         sensor.fiable = True
         sensor.save()
+
+        ultimo = SensorLeche.objects(vaca=sensor.vaca).order_by("-fecha_medicion").first()
+        if ultimo and str(ultimo.id) == str(sensor.id):
+            from semaforo.services import evaluar_vaca
+            evaluar_vaca(sensor.vaca, request.user.id)
+
         return redirect("vacas:detalle", vaca_id=str(sensor.vaca.id))
 
     valores = {
@@ -173,6 +199,7 @@ def editar_sensor(request, sensor_id):
         "ph": sensor.ph,
         "temperatura": sensor.temperatura,
         "conductividad_electrica": sensor.conductividad_electrica,
+        "diagnostico_mastitis": sensor.diagnostico_mastitis,
     }
     return render(request, "bitacora/form_sensor.html", {
         "sensor": sensor,

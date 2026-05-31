@@ -45,3 +45,13 @@ def clase_estado(estado):
         "Aislado": "aislado",
     }
     return mapa.get(estado, "sano")
+
+
+@register.filter
+def diagnostico_display(valor):
+    mapa = {
+        "confirmado": "Confirmada",
+        "sospecha_calculada": "Sospecha calculada",
+        "sospecha_descartada": "Sospecha descartada",
+    }
+    return mapa.get(valor, "Sin diagnostico")
