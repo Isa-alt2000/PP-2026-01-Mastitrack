@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Acerca de - Mastitrack{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Acerca de Mastitrack</h2>
+
+<div class="card mb-4 text-center">
+    <div class="card-body">
+        <p class="text-mt-gold mb-1" style="font-size: 2rem; font-weight: 700;">Mastitrack</p>
+        <p class="text-muted small mb-1">v1.0.0</p>
+        <p class="small text-muted mb-0">Universidad Nacional Rosario Castellanos</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4 class="text-mt-primary mb-3">Proyecto universitario</h4>
+                <p>
+                    <strong>Mastitrack</strong> es un sistema de monitoreo y deteccion temprana de mastitis bovina,
+                    desarrollado como parte del proyecto prototípico de cuarto semestre para la carrera de Ciencia de Datos para Negocios.
+                    <strong>Universidad Nacional Rosario Castellanos (UNRC)</strong>.
+                </p>
+                <p>
+                    El sistema integra registro de ordeño, está preparada para recibir datos de sensores de calidad de leche, 
+                    evaluación de riesgo mediante redes neuronales y calculadora de impacto financiero para apoyar la 
+                    toma de decisiones en pequeños y medianos establecimientos ganaderos.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Changelog</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 pb-3 border-bottom">
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="badge badge-mt-primary me-2">v1.0.0</span>
+                        <small class="text-muted">Version actual</small>
+                    </div>
+                    <ul class="mb-0 small">
+                        <li>Creación y gestión de vacas por nombre, arete, lote, etc..</li>
+                        <li>Semaforo de riesgo con red neuronal configurable.</li>
+                        <li>Calculadora financiera de impacto por mastitis.</li>
+                        <li>API REST con autenticacion JWT para ingesta automatica de sensores.</li>
+                        <li>Cifrado Fernet de campos sensibles en colecciones de sensores, riesgo e historial operativo.</li>
+                        <li>Interfaz web responsiva con dashboard de monitoreo y bitacora de eventos.</li>
+                        <li>Documentacion tecnica y manual de usuario en repositorio.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

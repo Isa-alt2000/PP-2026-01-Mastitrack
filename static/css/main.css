@@ -188,6 +188,12 @@ body {
     margin: 4px 10px;
 }
 
+/* --- Acerca de --- */
+.sidebar-about {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px 0 0;
+}
+
 /* --- Footer del sidebar --- */
 .sidebar-footer {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -692,3 +698,49 @@ a:hover {
 .border-estado-enferma { border-color: var(--mt-estado-enferma) !important; }
 .border-estado-tratamiento { border-color: var(--mt-estado-tratamiento) !important; }
 .border-estado-aislado { border-color: var(--mt-estado-aislado) !important; }
+
+/* ============================
+   Dashboard: secciones mastitis
+   ============================ */
+.border-mt-primary { border-color: var(--mt-primary) !important; }
+.border-mt-gold { border-color: var(--mt-gold) !important; }
+
+.bg-mt-primary-soft {
+    background-color: rgba(159, 34, 65, 0.1) !important;
+}
+
+.bg-mt-gold-soft {
+    background-color: rgba(188, 149, 92, 0.15) !important;
+}
+
+.badge-mt-primary {
+    background-color: var(--mt-primary) !important;
+    color: #fff !important;
+}
+
+.badge-mt-gold {
+    background-color: var(--mt-gold) !important;
+    color: #fff !important;
+}
+
+.btn-outline-mt-primary {
+    color: var(--mt-primary);
+    border-color: var(--mt-primary);
+    background-color: transparent;
+}
+
+.btn-outline-mt-primary:hover {
+    background-color: var(--mt-primary);
+    color: #fff;
+}
+
+.btn-outline-mt-gold {
+    color: var(--mt-gold);
+    border-color: var(--mt-gold);
+    background-color: transparent;
+}
+
+.btn-outline-mt-gold:hover {
+    background-color: var(--mt-gold);
+    color: #333;
+}

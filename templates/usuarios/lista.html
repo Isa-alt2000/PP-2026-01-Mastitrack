@@ -2,30 +2,45 @@
 
 {% block title %}Usuarios - Mastitrack{% endblock %}
 
+{% block extra_css %}
+<style>
+.usuario-card {
+    border: 2px solid var(--mt-gray);
+    transition: transform 0.2s;
+}
+.usuario-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(159, 34, 65, 0.15);
+}
+.usuario-mobile-toggle {
+    cursor: pointer;
+}
+.usuario-chevron {
+    transition: transform 0.2s;
+    color: var(--mt-gray);
+}
+.usuario-mobile-toggle[aria-expanded="true"] .usuario-chevron {
+    transform: rotate(180deg);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Usuarios</h2>
     <a href="{% url 'usuarios:crear' %}" class="btn btn-primary">Nuevo Usuario</a>
 </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Usuario</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for u in usuarios %}
-        <tr>
-            <td>{{ u.username }}</td>
-            <td>{{ u.first_name }} {{ u.last_name }}</td>
-            <td>{{ u.email }}</td>
-            <td>
+{% for u in usuarios %}
+<div class="card usuario-card mb-2">
+    <div class="card-body py-2 px-3">
+        <div class="d-none d-md-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <strong>{{ u.username }}</strong>
+                <span class="text-muted">{{ u.first_name }} {{ u.last_name }}</span>
+                <span class="text-muted small">{{ u.email }}</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
                 {% if u.is_superuser %}
                 <span class="badge badge-rol badge-rol-superadmin">superadmin</span>
                 {% elif u.groups.all.0 %}
@@ -33,21 +48,63 @@
                 {% else %}
                 <span class="badge badge-rol" style="background-color: var(--mt-gray); color: #fff;">sin rol</span>
                 {% endif %}
-            </td>
-            <td>
                 {% if u.is_active %}
                 <span class="badge" style="background-color: var(--mt-green);">Activo</span>
                 {% else %}
                 <span class="badge" style="background-color: var(--mt-gray);">Inactivo</span>
                 {% endif %}
-            </td>
-            <td>
                 {% if not u.is_superuser or es_superadmin %}
                 <a href="{% url 'usuarios:editar' u.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
                 {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+            </div>
+        </div>
+
+        <div class="d-md-none">
+            <div class="d-flex align-items-center justify-content-between usuario-mobile-toggle" data-bs-toggle="collapse" data-bs-target="#usuario-{{ u.id }}">
+                <div class="d-flex align-items-center gap-2">
+                    <strong>{{ u.username }}</strong>
+                    {% if u.is_superuser %}
+                    <span class="badge badge-rol badge-rol-superadmin">superadmin</span>
+                    {% elif u.groups.all.0 %}
+                    <span class="badge badge-rol badge-rol-{{ u.groups.all.0.name }}">{{ u.groups.all.0.name }}</span>
+                    {% else %}
+                    <span class="badge badge-rol" style="background-color: var(--mt-gray); color: #fff;">sin rol</span>
+                    {% endif %}
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    {% if u.is_active %}
+                    <span class="badge" style="background-color: var(--mt-green);">Activo</span>
+                    {% else %}
+                    <span class="badge" style="background-color: var(--mt-gray);">Inactivo</span>
+                    {% endif %}
+                    <svg class="usuario-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="collapse" id="usuario-{{ u.id }}">
+                <div class="pt-2 mt-2 border-top d-flex flex-column gap-1">
+                    {% if u.first_name or u.last_name %}
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small">Nombre</span>
+                        <span class="small">{{ u.first_name }} {{ u.last_name }}</span>
+                    </div>
+                    {% endif %}
+                    {% if u.email %}
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small">Email</span>
+                        <span class="small">{{ u.email }}</span>
+                    </div>
+                    {% endif %}
+                    {% if not u.is_superuser or es_superadmin %}
+                    <a href="{% url 'usuarios:editar' u.id %}" class="btn btn-sm btn-outline-primary mt-1">Editar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="text-center text-muted py-4">No hay usuarios registrados.</div>
+{% endfor %}
 {% endblock %}

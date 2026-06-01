@@ -31,3 +31,8 @@ def dashboard(request):
         "vacas_confirmadas": vacas_confirmadas,
         "vacas_sospecha": vacas_sospecha,
     })
+
+
+@login_required
+def acerca(request):
+    return render(request, "acerca.html")

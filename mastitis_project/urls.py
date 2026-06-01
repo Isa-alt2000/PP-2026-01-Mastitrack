@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import include, path
 
-from core.views import dashboard
+from core.views import acerca, dashboard
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -14,4 +14,5 @@ urlpatterns = [
     path("usuarios/", include("usuarios.urls")),
     path("api/", include("api.urls")),
     path("entrenamiento/", include("entrenamiento.urls")),
+    path("acerca/", acerca, name="acerca"),
 ]
