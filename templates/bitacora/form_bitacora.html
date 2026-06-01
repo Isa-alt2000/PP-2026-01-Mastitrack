@@ -148,6 +148,23 @@
 {% block extra_js %}
 <script>
 (function() {
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const vacaId = document.getElementById('vaca_id').value;
+        if (!vacaId) {
+            e.preventDefault();
+            let alerta = document.getElementById('vaca-error-client');
+            if (!alerta) {
+                alerta = document.createElement('div');
+                alerta.id = 'vaca-error-client';
+                alerta.className = 'alert alert-danger alert-dismissible fade show';
+                alerta.innerHTML = 'Debes seleccionar una vaca. <button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                form.parentNode.insertBefore(alerta, form);
+            }
+            document.getElementById('vaca-search').focus();
+        }
+    });
+
     const vacas = [
         {% for vaca in vacas %}
         { id: "{{ vaca.id }}", arete: "{{ vaca.arete }}", nombre: "{{ vaca.nombre }}", lote: "{{ vaca.lote|default:'' }}" },

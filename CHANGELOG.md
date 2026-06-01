@@ -1,6 +1,20 @@
 # Changelog
 
 ## [0.4.0] - 2026-05-31
+### Interfaz y usabilidad
+
+- Sidebar reorganizado: secciones "Gestion" (semaforo, calculadora) y "Configuracion" (parametros, entrenamiento, usuarios).
+- Pagina "Acerca de" con informacion del proyecto y changelog.
+- Modulo de usuarios responsivo con tarjetas expandibles en movil.
+- Espaciado corregido en cajas de parametros financieros y calculadora en movil.
+- Validacion en formulario de ordeno para no perder checkboxes al faltar vaca.
+- Colores del dashboard (mastitis confirmada y sospecha) unificados con la paleta principal.
+
+### Seguridad
+
+- Cifrado Fernet de campos sensibles en colecciones `sensores_leche`, `riesgo_mastitis_historico` y `eventos_riesgo_operativo`.
+- Script de migracion para cifrar datos existentes.
+
 ### Diagnostico de mastitis
 
 - Nuevo campo `diagnostico_mastitis` en `Vaca` con estados: `confirmado`, `sospecha_calculada`, `sospecha_descartada`.
