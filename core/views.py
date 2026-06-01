@@ -14,7 +14,10 @@ def dashboard(request):
     ultimos_riesgos = RiesgoMastitisHistorico.objects.order_by(
         "-fecha_evaluacion"
     )[:5]
-    alertas_rojas = RiesgoMastitisHistorico.objects(nivel_alerta="rojo").count()
+    alertas_rojas = sum(
+        1 for r in RiesgoMastitisHistorico.objects.only("nivel_alerta_cifrado")
+        if r.nivel_alerta == "rojo"
+    )
 
     vacas_confirmadas = Vaca.objects(activa=True, diagnostico_mastitis="confirmado")
     vacas_sospecha = Vaca.objects(activa=True, diagnostico_mastitis="sospecha_calculada")

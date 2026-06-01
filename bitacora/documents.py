@@ -97,17 +97,108 @@ ORIGENES_SENSOR = ("manual", "api")
 class SensorLeche(me.Document):
     vaca = me.ReferenceField(Vaca, required=True)
     bitacora_ordeno = me.ReferenceField(BitacoraOrdeno)
-    conteo_celulas_somaticas = me.IntField()
-    ph = me.FloatField()
-    temperatura = me.FloatField()
-    conductividad_electrica = me.FloatField()
+    conteo_celulas_somaticas_cifrado = me.StringField()
+    ph_cifrado = me.StringField()
+    temperatura_cifrada = me.StringField()
+    conductividad_electrica_cifrada = me.StringField()
+    diagnostico_mastitis_cifrado = me.StringField()
     fecha_medicion = me.DateTimeField(required=True)
     origen = me.StringField(choices=ORIGENES_SENSOR, default="manual")
     fiable = me.BooleanField(default=True)
     banderas_calidad = me.ListField(me.DictField())
-    diagnostico_mastitis = me.BooleanField(null=True, default=None)
+
+    _PROPS_CIFRADAS = (
+        "conteo_celulas_somaticas", "ph", "temperatura",
+        "conductividad_electrica", "diagnostico_mastitis",
+    )
 
     meta = {"collection": "sensores_leche", "ordering": ["-fecha_medicion"]}
 
+    def __init__(self, **kwargs):
+        props = {k: kwargs.pop(k) for k in list(kwargs) if k in self._PROPS_CIFRADAS}
+        super().__init__(**kwargs)
+        for k, v in props.items():
+            setattr(self, k, v)
+
     def __str__(self):
         return f"Sensor {self.vaca.arete} - {self.fecha_medicion}"
+
+    @property
+    def conteo_celulas_somaticas(self):
+        if not self.conteo_celulas_somaticas_cifrado:
+            return None
+        from core.crypto import descifrar
+        return int(descifrar(self.conteo_celulas_somaticas_cifrado))
+
+    @conteo_celulas_somaticas.setter
+    def conteo_celulas_somaticas(self, valor):
+        if valor is None:
+            self.conteo_celulas_somaticas_cifrado = None
+            return
+        from core.crypto import cifrar
+        self.conteo_celulas_somaticas_cifrado = cifrar(str(int(valor)))
+
+    @property
+    def ph(self):
+        if not self.ph_cifrado:
+            return None
+        from core.crypto import descifrar
+        return float(descifrar(self.ph_cifrado))
+
+    @ph.setter
+    def ph(self, valor):
+        if valor is None:
+            self.ph_cifrado = None
+            return
+        from core.crypto import cifrar
+        self.ph_cifrado = cifrar(str(float(valor)))
+
+    @property
+    def temperatura(self):
+        if not self.temperatura_cifrada:
+            return None
+        from core.crypto import descifrar
+        return float(descifrar(self.temperatura_cifrada))
+
+    @temperatura.setter
+    def temperatura(self, valor):
+        if valor is None:
+            self.temperatura_cifrada = None
+            return
+        from core.crypto import cifrar
+        self.temperatura_cifrada = cifrar(str(float(valor)))
+
+    @property
+    def conductividad_electrica(self):
+        if not self.conductividad_electrica_cifrada:
+            return None
+        from core.crypto import descifrar
+        return float(descifrar(self.conductividad_electrica_cifrada))
+
+    @conductividad_electrica.setter
+    def conductividad_electrica(self, valor):
+        if valor is None:
+            self.conductividad_electrica_cifrada = None
+            return
+        from core.crypto import cifrar
+        self.conductividad_electrica_cifrada = cifrar(str(float(valor)))
+
+    @property
+    def diagnostico_mastitis(self):
+        if not self.diagnostico_mastitis_cifrado:
+            return None
+        from core.crypto import descifrar
+        val = descifrar(self.diagnostico_mastitis_cifrado)
+        if val == "True":
+            return True
+        elif val == "False":
+            return False
+        return None
+
+    @diagnostico_mastitis.setter
+    def diagnostico_mastitis(self, valor):
+        if valor is None:
+            self.diagnostico_mastitis_cifrado = None
+            return
+        from core.crypto import cifrar
+        self.diagnostico_mastitis_cifrado = cifrar(str(bool(valor)))
