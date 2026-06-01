@@ -13,4 +13,5 @@ dependencies = [
     "gunicorn==23.0.0",
     "joblib>=1.5.3",
     "scikit-learn>=1.6.1",
+    "whitenoise>=6.12.0",
 ]
