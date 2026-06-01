@@ -110,18 +110,28 @@ def calcular_roi(vacas_total: int, vacas_enfermas: int, dias: int = 30) -> dict:
     }
 
 
-def proyectar_contagios(vacas_infectadas_iniciales: int, dias: int, tasa_contagio: float = 0.1, vacas_total: int = 500) -> list:
+def proyectar_contagios(vacas_infectadas_iniciales: int, dias: int, tasa_contagio: float = 0.1, vacas_total: int = 500, tasa_recuperacion: float = 0.14) -> list:
     proyeccion = []
-    infectadas = float(vacas_infectadas_iniciales)
+    N = float(vacas_total)
+    S = N - float(vacas_infectadas_iniciales)
+    I = float(vacas_infectadas_iniciales)
+    R = 0.0
 
     for dia in range(dias + 1):
         proyeccion.append({
             "dia": dia,
-            "infectadas": round(infectadas),
+            "susceptibles": round(S),
+            "infectadas": round(I),
+            "recuperadas": round(R),
         })
-        nuevas = infectadas * tasa_contagio
-        infectadas = infectadas + nuevas
-        if infectadas > vacas_total:
-            infectadas = vacas_total
+        nuevas_infecciones = tasa_contagio * S * I / N
+        nuevas_recuperaciones = tasa_recuperacion * I
+        S = S - nuevas_infecciones
+        I = I + nuevas_infecciones - nuevas_recuperaciones
+        R = R + nuevas_recuperaciones
+        if S < 0:
+            S = 0.0
+        if I < 0:
+            I = 0.0
 
     return proyeccion

@@ -73,7 +73,8 @@ def api_proyeccion_contagios(request):
     dias = int(request.GET.get("dias", 14))
     tasa = float(request.GET.get("tasa", 0.1))
     vacas_total = int(request.GET.get("vacas_total", 500))
-    resultado = proyectar_contagios(infectadas, dias, tasa, vacas_total)
+    gamma = float(request.GET.get("gamma", 0.14))
+    resultado = proyectar_contagios(infectadas, dias, tasa, vacas_total, gamma)
     return JsonResponse({"proyeccion": resultado})
 
 

@@ -332,18 +332,32 @@ function cargarDatos() {
         .then(r => r.json())
         .then(data => {
             const labels = data.proyeccion.map(p => `Dia ${p.dia}`);
-            const valores = data.proyeccion.map(p => p.infectadas);
+            const susceptibles = data.proyeccion.map(p => p.susceptibles);
+            const infectadas = data.proyeccion.map(p => p.infectadas);
+            const recuperadas = data.proyeccion.map(p => p.recuperadas);
             if (chartContagios) chartContagios.destroy();
             chartContagios = new Chart(document.getElementById('grafico-contagios'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Vacas infectadas',
-                        data: valores,
+                        label: 'Susceptibles',
+                        data: susceptibles,
+                        borderColor: '#235B4E',
+                        backgroundColor: 'rgba(35,91,78,0.1)',
+                        fill: false,
+                    }, {
+                        label: 'Infectadas',
+                        data: infectadas,
                         borderColor: '#9F2241',
                         backgroundColor: 'rgba(159,34,65,0.1)',
                         fill: true,
+                    }, {
+                        label: 'Recuperadas',
+                        data: recuperadas,
+                        borderColor: '#1565C0',
+                        backgroundColor: 'rgba(21,101,192,0.1)',
+                        fill: false,
                     }]
                 },
                 options: { responsive: true }
