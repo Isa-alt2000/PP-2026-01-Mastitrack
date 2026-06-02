@@ -40,7 +40,7 @@
     <div class="row">
         {% for item in datos_vacas %}
         <div class="col-lg-3 col-md-4 col-sm-6 mb-3 d-flex semaforo-item" data-arete="{{ item.vaca.arete }}" data-nombre="{{ item.vaca.nombre }}">
-            <div class="card semaforo-card {% if item.riesgo %}semaforo-card-{{ item.riesgo.nivel_alerta }}{% endif %} w-100">
+            <div class="card semaforo-card mt-pattern {% if item.riesgo %}semaforo-card-{{ item.riesgo.nivel_alerta }}{% endif %} w-100">
                 <div class="card-body text-center d-flex flex-column justify-content-center">
                     <h6 class="mb-1">{{ item.vaca.arete }}</h6>
                     <p class="text-muted small mb-2">{{ item.vaca.nombre }}</p>
@@ -89,7 +89,7 @@
 
 <div id="vista-lista" class="d-none">
     {% for item in datos_vacas %}
-    <div class="card semaforo-card mb-2 {% if item.riesgo %}semaforo-card-{{ item.riesgo.nivel_alerta }}{% endif %} semaforo-item" data-arete="{{ item.vaca.arete }}" data-nombre="{{ item.vaca.nombre }}">
+    <div class="card semaforo-card mt-pattern mb-2 {% if item.riesgo %}semaforo-card-{{ item.riesgo.nivel_alerta }}{% endif %} semaforo-item" data-arete="{{ item.vaca.arete }}" data-nombre="{{ item.vaca.nombre }}">
         <div class="card-body d-flex align-items-center justify-content-between py-2 px-3">
             <div class="d-flex align-items-center gap-3">
                 <div>
@@ -141,28 +141,10 @@
 </div>
 {% endblock %}
 
-{% load static %}
 {% block extra_css %}
 <style>
 #vista-tarjetas .semaforo-card {
     min-height: 180px;
-}
-.semaforo-card {
-    position: relative;
-    overflow: hidden;
-}
-.semaforo-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('{% static "img/mastitrack_logo_gris.png" %}');
-    background-size: 24px;
-    background-repeat: repeat;
-    opacity: 0.04;
-    pointer-events: none;
 }
 </style>
 {% endblock %}

@@ -59,7 +59,7 @@
     <div class="card-header bg-mt-primary-soft">
         <h5 class="mb-0 text-mt-primary">Mastitis Confirmada</h5>
     </div>
-    <div class="card-body dashboard-section-pattern">
+    <div class="card-body mt-pattern">
         <div class="row">
             {% for vaca in vacas_confirmadas %}
             <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
@@ -85,7 +85,7 @@
     <div class="card-header bg-mt-gold-soft">
         <h5 class="mb-0 text-mt-gold">Sospecha de Mastitis</h5>
     </div>
-    <div class="card-body dashboard-section-pattern">
+    <div class="card-body mt-pattern">
         <div class="row">
             {% for vaca in vacas_sospecha %}
             <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
@@ -139,26 +139,4 @@
     </div>
 </div>
 {% endif %}
-{% endblock %}
-
-{% block extra_css %}
-<style>
-.dashboard-section-pattern {
-    position: relative;
-    overflow: hidden;
-}
-.dashboard-section-pattern::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('{% static "img/mastitrack_logo_gris.png" %}');
-    background-size: 24px;
-    background-repeat: repeat;
-    opacity: 0.04;
-    pointer-events: none;
-}
-</style>
 {% endblock %}

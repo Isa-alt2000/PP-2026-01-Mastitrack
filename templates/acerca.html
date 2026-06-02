@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Acerca de - Mastitrack{% endblock %}
 
@@ -7,6 +8,7 @@
 
 <div class="card mb-4 text-center">
     <div class="card-body">
+        <img src="{% static 'img/mastitrack_logo.png' %}" alt="Mastitrack" style="height: 64px; transition: transform 0.4s ease; cursor: pointer;" class="mb-2" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
         <p class="text-mt-gold mb-1" style="font-size: 2rem; font-weight: 700;">Mastitrack</p>
         <p class="text-muted small mb-1">v1.0.0</p>
         <p class="small text-muted mb-0">Universidad Nacional Rosario Castellanos</p>
@@ -32,7 +34,7 @@
         </div>
 
         <div class="card mb-4">
-            <div class="card-header">
+            <div class="card-header mt-pattern">
                 <h5 class="mb-0">Changelog</h5>
             </div>
             <div class="card-body">

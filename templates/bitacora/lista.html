@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static core_tags %}
+{% load core_tags %}
 
 {% block title %}Bitácora de Ordeño - Mastitrack{% endblock %}
 
@@ -36,7 +36,7 @@
 </div>
 
 {% for b in bitacoras %}
-<div class="card bitacora-card mb-2 bitacora-item {% if b.metricas %}{% if b.metricas.porcentaje_cumplimiento >= 80 %}bitacora-card-ok{% elif b.metricas.porcentaje_cumplimiento >= 50 %}bitacora-card-medio{% else %}bitacora-card-bajo{% endif %}{% endif %}" data-arete="{{ b.vaca.arete }}" data-nombre="{{ b.vaca.nombre }}">
+<div class="card bitacora-card mt-pattern mb-2 bitacora-item {% if b.metricas %}{% if b.metricas.porcentaje_cumplimiento >= 80 %}bitacora-card-ok{% elif b.metricas.porcentaje_cumplimiento >= 50 %}bitacora-card-medio{% else %}bitacora-card-bajo{% endif %}{% endif %}" data-arete="{{ b.vaca.arete }}" data-nombre="{{ b.vaca.nombre }}">
     <div class="card-body py-2 px-3">
         <div class="bitacora-desktop d-none d-lg-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-3" style="min-width: 340px;">
@@ -124,21 +124,6 @@
 .bitacora-card {
     border: 2px solid var(--mt-gray);
     transition: transform 0.2s;
-    position: relative;
-    overflow: hidden;
-}
-.bitacora-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('{% static "img/mastitrack_logo_gris.png" %}');
-    background-size: 24px;
-    background-repeat: repeat;
-    opacity: 0.04;
-    pointer-events: none;
 }
 .bitacora-card:hover {
     transform: translateY(-2px);

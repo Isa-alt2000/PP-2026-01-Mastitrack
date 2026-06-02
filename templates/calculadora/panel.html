@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static core_tags %}
+{% load core_tags %}
 
 {% block title %}Calculadora de Perdidas - Mastitrack{% endblock %}
 
@@ -59,23 +59,6 @@
 }
 .desglose-reaccion .desglose-total td {
     color: var(--mt-primary);
-}
-#banner-roi {
-    position: relative;
-    overflow: hidden;
-}
-#banner-roi::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('{% static "img/mastitrack_logo_gris.png" %}');
-    background-size: 24px;
-    background-repeat: repeat;
-    opacity: 0.04;
-    pointer-events: none;
 }
 </style>
 {% endblock %}
@@ -138,7 +121,7 @@
 
 <!-- Sliders de parametros -->
 <div class="card mb-4">
-    <div class="card-header">Parametros de Simulacion</div>
+    <div class="card-header mt-pattern">Parametros de Simulacion</div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-4">
@@ -166,7 +149,7 @@
     </div>
 </div>
 
-<div class="text-center mb-4 py-2" id="banner-roi" style="font-size: 1.05em; border-radius: 6px; padding: 10px 18px;">
+<div class="text-center mb-4 py-2 mt-pattern" id="banner-roi" style="font-size: 1.05em; border-radius: 6px; padding: 10px 18px;">
 </div>
 
 <!-- Tarjetas de resultados -->
@@ -203,7 +186,7 @@
 <div class="row mb-4">
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">Proyeccion de Contagios</div>
+            <div class="card-header mt-pattern">Proyeccion de Contagios</div>
             <div class="card-body">
                 <canvas id="grafico-contagios"></canvas>
             </div>
@@ -211,7 +194,7 @@
     </div>
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">Prevencion vs Reaccion</div>
+            <div class="card-header mt-pattern">Prevencion vs Reaccion</div>
             <div class="card-body">
                 <canvas id="grafico-pvr"></canvas>
             </div>
