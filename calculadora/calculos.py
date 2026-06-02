@@ -89,24 +89,39 @@ def calcular_costo_reaccion(vacas_enfermas: int, dias: int = 7) -> dict:
     }
 
 
-def calcular_roi(vacas_total: int, vacas_enfermas: int, dias: int = 30) -> dict:
+def calcular_roi(vacas_total: int, vacas_enfermas: int, dias: int = 30, efectividad: float = 0.7) -> dict:
     """
-    ROI = (costo_reaccion - costo_prevencion) / costo_prevencion * 100
+    ROI = (costo_sin_prevencion - costo_con_prevencion) / costo_con_prevencion * 100
+
+    La prevencion no elimina todos los casos: con una efectividad del 70%,
+    el 30% de los casos aun ocurren. El ROI compara el costo total de
+    prevenir vs no hacer nada.
     """
     prevencion = calcular_costo_prevencion(vacas_total, dias)
-    reaccion = calcular_costo_reaccion(vacas_enfermas, dias)
+    dias_tratamiento = min(dias, 7)
+    reaccion = calcular_costo_reaccion(vacas_enfermas, dias_tratamiento)
 
     costo_prev = prevencion["total_prevencion"]
-    costo_reac = reaccion["total_reaccion"]
+    costo_evitable = (
+        reaccion["costo_antibiotico"]
+        + reaccion["costo_veterinario"]
+        + reaccion["leche_perdida"]
+    )
 
-    ahorro = costo_reac - costo_prev
-    roi = (ahorro / costo_prev * 100) if costo_prev > 0 else 0
+    costo_sin_prevencion = costo_evitable
+    costo_residual = costo_evitable * (1 - efectividad)
+    costo_con_prevencion = costo_prev + costo_residual
+
+    ahorro = costo_sin_prevencion - costo_con_prevencion
+    roi = (ahorro / costo_con_prevencion * 100) if costo_con_prevencion > 0 else 0
 
     return {
         "prevencion": prevencion,
         "reaccion": reaccion,
         "ahorro_estimado": round(ahorro, 2),
+        "riesgo_reemplazo": round(reaccion["costo_reemplazo"], 2),
         "roi_porcentaje": round(roi, 2),
+        "efectividad": efectividad,
     }
 
 

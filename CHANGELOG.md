@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.1] - 2026-06-02
+### Calculadora
+- Corregida formula de ROI: dias de tratamiento limitados a 7 (antes usaba el periodo completo de simulacion), costo de reemplazo separado como opcion via checkbox, y efectividad de prevencion al 70% (antes asumia 100%). ROI tipico pasa de 700-2200% a rangos realistas de 50-200%.
+- Nuevo banner "Ganas $X por cada $1 invertido en prevencion" debajo de los sliders.
+- Desglose de reaccion y grafico de barras ahora respetan el checkbox de descarte.
+
 ## [0.4.0] - 2026-05-31
 ### Interfaz y usabilidad
 

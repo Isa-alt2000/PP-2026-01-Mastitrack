@@ -137,7 +137,19 @@
                 <input type="range" class="form-range" id="slider-total" min="1" max="{{ total_vacas }}" value="{{ total_vacas }}">
             </div>
         </div>
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="check-descarte">
+                    <label class="form-check-label" for="check-descarte">Incluir riesgo de descarte (15%) en ROI</label>
+                </div>
+                <small class="text-muted d-none" id="nota-descarte">Un ROI mayor al incluir descarte no significa que sea mejor: significa que el escenario sin prevencion es mas costoso, por lo que prevenirlo resulta mas valioso.</small>
+            </div>
+        </div>
     </div>
+</div>
+
+<div class="text-center mb-4 py-2" id="banner-roi" style="font-size: 1.05em; border-radius: 6px; padding: 10px 18px;">
 </div>
 
 <!-- Tarjetas de resultados -->
@@ -160,7 +172,7 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card card-stat-success">
+        <div class="card card-stat-success" id="card-roi">
             <div class="card-body text-center">
                 <h6>ROI de Prevencion</h6>
                 <p class="display-6 text-mt-green" id="tarjeta-roi">0%</p>
@@ -240,11 +252,13 @@
 const sliderDias = document.getElementById('slider-dias');
 const sliderVacas = document.getElementById('slider-vacas');
 const sliderTotal = document.getElementById('slider-total');
+const checkDescarte = document.getElementById('check-descarte');
 
 const PARAMS = JSON.parse(document.getElementById('params-data').textContent);
 
 let chartContagios = null;
 let chartPVR = null;
+let ultimoROI = null;
 
 function fmt(n) {
     return n.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -252,8 +266,14 @@ function fmt(n) {
 
 function actualizarValores() {
     document.getElementById('val-dias').textContent = sliderDias.value;
-    document.getElementById('val-vacas').textContent = sliderVacas.value;
     document.getElementById('val-total').textContent = sliderTotal.value;
+
+    const totalHato = parseInt(sliderTotal.value);
+    sliderVacas.max = totalHato;
+    if (parseInt(sliderVacas.value) > totalHato) {
+        sliderVacas.value = totalHato;
+    }
+    document.getElementById('val-vacas').textContent = sliderVacas.value;
 }
 
 function renderDesglosePrevencion(prev, vacasTotal, dias) {
@@ -282,7 +302,14 @@ function renderDesglosePrevencion(prev, vacasTotal, dias) {
 function renderDesgloseReaccion(reac, vacasEnfermas, dias) {
     const ltDia = PARAMS.produccion.produccion_promedio_vaca_dia;
     const litrosPerdidos = vacasEnfermas * dias * ltDia;
+    const incluyeDescarte = checkDescarte.checked;
+    const totalMostrado = incluyeDescarte ? reac.total_reaccion : reac.total_reaccion - reac.costo_reemplazo;
     const tbody = document.getElementById('tbody-reaccion');
+    const filaReemplazo = incluyeDescarte ? `
+        <tr>
+            <td>Reemplazo (15% descarte)<br><small class="text-muted">${vacasEnfermas} vaca(s) x 15% x $${fmt(PARAMS.reaccion.costo_reemplazo_vaca)}/vaca</small></td>
+            <td class="text-end">$${fmt(reac.costo_reemplazo)}</td>
+        </tr>` : '';
     tbody.innerHTML = `
         <tr>
             <td>Antibioticos<br><small class="text-muted">${vacasEnfermas} vaca(s) x $${PARAMS.reaccion.precio_promedio_antibiotico}/tratamiento</small></td>
@@ -296,14 +323,82 @@ function renderDesgloseReaccion(reac, vacasEnfermas, dias) {
             <td>Leche descartada<br><small class="text-muted">${vacasEnfermas} vaca(s) x ${dias} dias x ${ltDia} lt/dia = ${fmt(litrosPerdidos)} lt x $${PARAMS.produccion.precio_venta_litro_leche}/lt</small></td>
             <td class="text-end">$${fmt(reac.leche_perdida)}</td>
         </tr>
-        <tr>
-            <td>Reemplazo (15% descarte)<br><small class="text-muted">${vacasEnfermas} vaca(s) x 15% x $${fmt(PARAMS.reaccion.costo_reemplazo_vaca)}/vaca</small></td>
-            <td class="text-end">$${fmt(reac.costo_reemplazo)}</td>
-        </tr>
+        ${filaReemplazo}
         <tr class="desglose-total">
             <td>Total Reaccion (${dias} dias)</td>
-            <td class="text-end">$${fmt(reac.total_reaccion)}</td>
+            <td class="text-end">$${fmt(totalMostrado)}</td>
         </tr>`;
+}
+
+function actualizarTarjetasROI() {
+    if (!ultimoROI) return;
+    const data = ultimoROI;
+    const incluyeDescarte = checkDescarte.checked;
+    const reemplazo = data.riesgo_reemplazo || 0;
+    const efectividad = data.efectividad || 0.7;
+
+    const costoEvitable = data.reaccion.costo_antibiotico + data.reaccion.costo_veterinario + data.reaccion.leche_perdida;
+    const costoSinPrevencion = incluyeDescarte ? costoEvitable + reemplazo : costoEvitable;
+    const costoResidual = costoSinPrevencion * (1 - efectividad);
+    const costoConPrevencion = data.prevencion.total_prevencion + costoResidual;
+
+    const ahorro = costoSinPrevencion - costoConPrevencion;
+    const roi = costoConPrevencion > 0 ? (ahorro / costoConPrevencion * 100) : 0;
+
+    const gananciaPorPeso = costoConPrevencion > 0 ? (ahorro / costoConPrevencion) : 0;
+
+    const tarjetaRoi = document.getElementById('tarjeta-roi');
+    const tarjetaAhorro = document.getElementById('tarjeta-ahorro');
+
+    document.getElementById('tarjeta-reaccion').textContent = `$${fmt(costoSinPrevencion)}`;
+    tarjetaRoi.textContent = `${roi.toFixed(1)}%`;
+
+    const cardRoi = document.getElementById('card-roi');
+    if (roi >= 0) {
+        tarjetaRoi.className = 'display-6 text-mt-green';
+        tarjetaAhorro.textContent = `Ahorro: $${fmt(ahorro)}`;
+        cardRoi.className = 'card card-stat-success';
+    } else {
+        tarjetaRoi.className = 'display-6 text-mt-primary';
+        tarjetaAhorro.textContent = `Perdida: $${fmt(Math.abs(ahorro))}`;
+        cardRoi.className = 'card card-stat-danger';
+    }
+
+    const banner = document.getElementById('banner-roi');
+    if (gananciaPorPeso >= 0) {
+        banner.style.backgroundColor = '#eef6f5';
+        banner.style.borderLeft = '4px solid var(--mt-green-dark)';
+        banner.style.color = 'var(--mt-green-dark)';
+        banner.innerHTML = `Ahorras <strong>$${gananciaPorPeso.toFixed(2)}</strong> por cada <strong>$1</strong> invertido en prevencion`;
+    } else {
+        banner.style.backgroundColor = '#fdeaea';
+        banner.style.borderLeft = '4px solid var(--mt-primary)';
+        banner.style.color = 'var(--mt-primary)';
+        banner.innerHTML = `Pierdes <strong>$${Math.abs(gananciaPorPeso).toFixed(2)}</strong> por cada <strong>$1</strong> invertido en prevencion`;
+    }
+
+    const notaDescarte = document.getElementById('nota-descarte');
+    if (incluyeDescarte) {
+        notaDescarte.classList.remove('d-none');
+    } else {
+        notaDescarte.classList.add('d-none');
+    }
+
+    renderDesgloseReaccion(data.reaccion, parseInt(sliderVacas.value), data.reaccion.dias);
+
+    if (chartPVR) chartPVR.destroy();
+    chartPVR = new Chart(document.getElementById('grafico-pvr'), {
+        type: 'bar',
+        data: {
+            labels: ['Prevencion', 'Reaccion'],
+            datasets: [{
+                label: 'Costo ($)',
+                data: [data.prevencion.total_prevencion, costoSinPrevencion],
+                backgroundColor: ['#235B4E', '#9F2241'],
+            }]
+        },
+        options: { responsive: true }
+    });
 }
 
 function cargarDatos() {
@@ -321,11 +416,10 @@ function cargarDatos() {
     fetch(`/calculadora/api/roi/?vacas_total=${total}&vacas_enfermas=${vacas}&dias=${dias}`)
         .then(r => r.json())
         .then(data => {
-            document.getElementById('tarjeta-reaccion').textContent = `$${fmt(data.reaccion.total_reaccion)}`;
-            document.getElementById('tarjeta-roi').textContent = `${data.roi_porcentaje.toFixed(1)}%`;
-            document.getElementById('tarjeta-ahorro').textContent = `Ahorro: $${fmt(data.ahorro_estimado)}`;
+            ultimoROI = data;
+            actualizarTarjetasROI();
             renderDesglosePrevencion(data.prevencion, parseInt(total), parseInt(dias));
-            renderDesgloseReaccion(data.reaccion, parseInt(vacas), parseInt(dias));
+            renderDesgloseReaccion(data.reaccion, parseInt(vacas), data.reaccion.dias);
         });
 
     fetch(`/calculadora/api/proyeccion/?infectadas=${vacas}&dias=${dias}&vacas_total=${total}`)
@@ -364,23 +458,6 @@ function cargarDatos() {
             });
         });
 
-    fetch(`/calculadora/api/prevencion-vs-reaccion/?vacas_total=${total}&vacas_enfermas=${vacas}&dias=${dias}`)
-        .then(r => r.json())
-        .then(data => {
-            if (chartPVR) chartPVR.destroy();
-            chartPVR = new Chart(document.getElementById('grafico-pvr'), {
-                type: 'bar',
-                data: {
-                    labels: ['Prevencion', 'Reaccion'],
-                    datasets: [{
-                        label: 'Costo ($)',
-                        data: [data.prevencion.total_prevencion, data.reaccion.total_reaccion],
-                        backgroundColor: ['#235B4E', '#9F2241'],
-                    }]
-                },
-                options: { responsive: true }
-            });
-        });
 }
 
 sliderDias.addEventListener('input', actualizarValores);
@@ -390,6 +467,7 @@ sliderTotal.addEventListener('input', actualizarValores);
 sliderDias.addEventListener('change', cargarDatos);
 sliderVacas.addEventListener('change', cargarDatos);
 sliderTotal.addEventListener('change', cargarDatos);
+checkDescarte.addEventListener('change', actualizarTarjetasROI);
 
 cargarDatos();
 </script>

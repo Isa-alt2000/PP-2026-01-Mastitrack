@@ -70,11 +70,12 @@ Ruta de administracion: `/calculadora/parametros/`
 
 El panel tiene 3 controles deslizantes que alimentan todos los calculos:
 
-| Slider | Rango | Default | Descripcion |
-|--------|-------|---------|-------------|
+| Control | Rango | Default | Descripcion |
+|---------|-------|---------|-------------|
 | Dias sin atencion | 1 - 30 | 7 | Dias que pasan sin atender la alerta |
 | Vacas afectadas | 1 - total activas | 3 (o total si < 3) | Numero de vacas enfermas |
 | Total del hato | 1 - total activas | Total activas | Tamano del hato para calculos de prevencion |
+| Incluir riesgo de descarte | checkbox | desactivado | Suma el costo de reemplazo (15%) al calculo de ROI, costo de reaccion y desglose |
 
 Los valores maximos de "Vacas afectadas" y "Total del hato" se vinculan dinamicamente a `Vaca.objects(activa=True).count()`.
 
@@ -192,23 +193,38 @@ total        = $43,562.50
 
 ### 4. ROI de prevencion
 
-Calcula el retorno de inversion de un programa de prevencion comparado con el costo de reaccionar.
+Calcula el retorno de inversion comparando dos escenarios: no prevenir (pagar el costo total de reaccion) vs prevenir (pagar prevencion + tratamiento de los casos residuales que la prevencion no evita).
+
+**Efectividad de prevencion:** Se asume un 70% de efectividad. El 30% de los casos de mastitis aun ocurren a pesar de la prevencion y generan costos de tratamiento.
+
+**Costo de reemplazo:** Excluido del calculo base. Se puede incluir opcionalmente desde la interfaz.
 
 ```
-ahorro = total_reaccion - total_prevencion
+costo_evitable = costo_antibiotico + costo_veterinario + leche_perdida
 
-ROI = (ahorro / total_prevencion) * 100
+costo_sin_prevencion = costo_evitable
+
+costo_residual = costo_evitable * (1 - 0.70)
+
+costo_con_prevencion = total_prevencion + costo_residual
+
+ahorro = costo_sin_prevencion - costo_con_prevencion
+
+ROI = (ahorro / costo_con_prevencion) * 100
 ```
 
-**Ejemplo** (continuando con los valores anteriores):
+**Ejemplo:** 50 vacas totales, 5 enfermas, 30 dias de simulacion:
 ```
-ahorro = 43,562.50 - 8,857.50 = $34,705.00
-ROI    = (34,705.00 / 8,857.50) * 100 = 391.9%
+costo_evitable     = 4,250 + 3,000 + 10,062.50 = $17,312.50
+costo_residual     = 17,312.50 * 0.30           = $5,193.75
+costo_con_prev     = 8,857.50 + 5,193.75        = $14,051.25
+ahorro             = 17,312.50 - 14,051.25      = $3,261.25
+ROI                = (3,261.25 / 14,051.25) * 100 = 23.2%
 ```
 
-Un ROI positivo indica que la prevencion es mas economica que la reaccion.
+Un ROI positivo indica que la prevencion es mas economica que la reaccion. El panel muestra ademas un banner con la ganancia por peso invertido: "Ganas $X por cada $1 invertido en prevencion".
 
-**API:** `GET /calculadora/api/roi/?vacas_total=50&vacas_enfermas=5`
+**API:** `GET /calculadora/api/roi/?vacas_total=50&vacas_enfermas=5&dias=30`
 
 **Retorna:**
 
@@ -216,8 +232,10 @@ Un ROI positivo indica que la prevencion es mas economica que la reaccion.
 {
     "prevencion": { "...desglose..." },
     "reaccion": { "...desglose..." },
-    "ahorro_estimado": 34705.0,
-    "roi_porcentaje": 391.88
+    "ahorro_estimado": 3261.25,
+    "riesgo_reemplazo": 26250.0,
+    "roi_porcentaje": 23.21,
+    "efectividad": 0.7
 }
 ```
 
@@ -283,21 +301,23 @@ Todas las APIs son de uso interno del panel (no publicas). Requieren sesion aute
 El panel (`/calculadora/`) se compone de:
 
 1. **Infoboxes de parametros:** Muestran los precios unitarios vigentes en 3 columnas (produccion, insumos, costos de reaccion).
-2. **Sliders de simulacion:** 3 controles que ajustan los parametros de entrada.
-3. **Tarjetas de resultados:** Perdida proyectada (rojo), costo de reaccion (dorado), ROI de prevencion (verde).
-4. **Grafico de contagios:** Curva de crecimiento exponencial acotado (Chart.js, tipo linea).
-5. **Grafico prevencion vs reaccion:** Barras comparativas de costos totales (Chart.js, tipo barra).
-6. **Tablas de desglose:** Detalle de cada componente de costo con la formula aplicada y los montos parciales, actualizadas dinamicamente.
+2. **Sliders de simulacion:** 3 controles deslizantes + checkbox de riesgo de descarte.
+3. **Banner de ganancia:** Muestra "Ganas $X por cada $1 invertido en prevencion", actualizado en tiempo real.
+4. **Tarjetas de resultados:** Perdida proyectada (rojo), costo de reaccion (dorado), ROI de prevencion (verde).
+5. **Grafico de contagios:** Curva SIR de propagacion (Chart.js, tipo linea).
+6. **Grafico prevencion vs reaccion:** Barras comparativas de costos totales (Chart.js, tipo barra). Respeta el checkbox de descarte.
+7. **Tablas de desglose:** Detalle de cada componente de costo con la formula aplicada y los montos parciales. La fila de reemplazo se muestra/oculta segun el checkbox.
 
 ## Supuestos y limitaciones
 
 | Supuesto | Valor | Justificacion |
 |----------|-------|---------------|
 | Tasa de contagio | 10% diario | Estimacion conservadora para mastitis contagiosa |
-| Dias de tratamiento | 7 | Duracion tipica de tratamiento con antibioticos |
-| Tasa de descarte | 15% | Porcentaje de vacas que no se recuperan y deben reemplazarse |
+| Dias de tratamiento | max 7 | Duracion tipica de tratamiento con antibioticos. Se usa `min(dias_simulacion, 7)` |
+| Tasa de descarte | 15% | Porcentaje de vacas que no se recuperan y deben reemplazarse (opcional en ROI) |
+| Efectividad de prevencion | 70% | Ningun programa previene el 100% de los casos. El 30% residual genera costos de tratamiento |
 | Ordenos por mes | 60 | 2 ordenos diarios x 30 dias |
-| Perdida de produccion | 100% | Asume que la vaca enferma pierde toda su produccion |
+| Perdida de produccion | 100% | Asume que la vaca enferma pierde toda su produccion durante el tratamiento |
 | Dosis sellador | 0.005 lt/ordeno | Consumo promedio por aplicacion |
 
-Estos valores estan fijos en el codigo (`calculadora/calculos.py`). Los parametros financieros (precios) si son editables por el administrador desde `/calculadora/parametros/`.
+Estos valores estan fijos en el codigo (`calculadora/calculos.py`). Los parametros financieros (precios) si son editables por el administrador desde `/calculadora/parametros/`. Para detalles sobre los cambios en la formula de ROI, ver `docs/cambios.md`.

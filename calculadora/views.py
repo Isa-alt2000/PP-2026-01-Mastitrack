@@ -86,7 +86,8 @@ def api_prevencion_vs_reaccion(request):
     vacas_enfermas = int(request.GET.get("vacas_enfermas", 5))
     dias = int(request.GET.get("dias", 30))
     prevencion = calcular_costo_prevencion(vacas_total, dias)
-    reaccion = calcular_costo_reaccion(vacas_enfermas, dias)
+    dias_tratamiento = min(dias, 7)
+    reaccion = calcular_costo_reaccion(vacas_enfermas, dias_tratamiento)
     return JsonResponse({
         "prevencion": prevencion,
         "reaccion": reaccion,
