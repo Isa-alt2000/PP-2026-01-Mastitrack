@@ -546,6 +546,22 @@ a:hover {
     color: var(--mt-gold-light);
     font-size: 0.85em;
     margin-top: auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.footer-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40%;
+    height: 100%;
+    background-size: 24px;
+    background-repeat: repeat;
+    opacity: 0.04;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
+    mask-image: linear-gradient(to right, transparent, black 40%);
 }
 
 .footer-logo-unrc {
@@ -641,6 +657,21 @@ a:hover {
     padding: 0 16px;
     gap: 12px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.mobile-topbar-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 75%;
+    height: 100%;
+    background-size: 24px;
+    background-repeat: repeat;
+    opacity: 0.06;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
+    mask-image: linear-gradient(to right, transparent, black 40%);
 }
 
 .mobile-topbar-toggle {
@@ -698,6 +729,171 @@ a:hover {
 .border-estado-enferma { border-color: var(--mt-estado-enferma) !important; }
 .border-estado-tratamiento { border-color: var(--mt-estado-tratamiento) !important; }
 .border-estado-aislado { border-color: var(--mt-estado-aislado) !important; }
+
+/* ============================
+   Dashboard: Banner
+   ============================ */
+.dashboard-banner {
+    display: flex;
+    width: 100%;
+    height: 180px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.banner-logo-section {
+    width: 30%;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.banner-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(3px);
+    transform: scale(1.3);
+}
+
+.banner-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 100px;
+    z-index: 2;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+    transition: transform 0.4s ease;
+    cursor: pointer;
+}
+
+.banner-logo:hover {
+    transform: translate(-50%, -50%) scale(1.25);
+}
+
+.banner-logo-section::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, #fff);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.banner-welcome-section {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 24px 40px;
+    background: linear-gradient(135deg, #fff 0%, rgba(188, 149, 92, 0.05) 100%);
+    position: relative;
+}
+
+.banner-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 15%;
+    height: 100%;
+    background-size: 32px;
+    background-repeat: repeat;
+    opacity: 0.09;
+    transform: rotate(-30deg) scale(2);
+    pointer-events: none;
+}
+
+.banner-title {
+    font-size: 2.4rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, var(--mt-gold), var(--mt-gold-light), var(--mt-gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.banner-title-divider {
+    width: 60px;
+    height: 3px;
+    border: none;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--mt-gold-light), var(--mt-gold), var(--mt-gold-light));
+    margin: 8px 0;
+}
+
+.banner-subtitle {
+    font-size: 1.15rem;
+    color: var(--mt-gray-dark);
+    margin: 0;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .dashboard-banner {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .banner-logo-section {
+        width: 100%;
+        height: 120px;
+    }
+
+    .banner-logo-section::after {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 60%;
+        background: linear-gradient(to bottom, transparent, #fff);
+    }
+
+    .banner-welcome-section {
+        width: 100%;
+        padding: 16px 20px;
+        background: #fff;
+    }
+
+    .banner-title {
+        font-size: 1.6rem;
+    }
+
+    .banner-subtitle {
+        font-size: 1rem;
+    }
+
+    .banner-logo {
+        height: 60px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .dashboard-banner {
+        height: 150px;
+    }
+
+    .banner-title {
+        font-size: 1.9rem;
+    }
+
+    .banner-welcome-section {
+        padding: 20px 28px;
+    }
+
+    .banner-logo {
+        height: 65px;
+    }
+}
 
 /* ============================
    Dashboard: secciones mastitis

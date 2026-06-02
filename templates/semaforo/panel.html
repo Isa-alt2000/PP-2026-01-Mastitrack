@@ -141,10 +141,28 @@
 </div>
 {% endblock %}
 
+{% load static %}
 {% block extra_css %}
 <style>
 #vista-tarjetas .semaforo-card {
     min-height: 180px;
+}
+.semaforo-card {
+    position: relative;
+    overflow: hidden;
+}
+.semaforo-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('{% static "img/mastitrack_logo_gris.png" %}');
+    background-size: 24px;
+    background-repeat: repeat;
+    opacity: 0.04;
+    pointer-events: none;
 }
 </style>
 {% endblock %}

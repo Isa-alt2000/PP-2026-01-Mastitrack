@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load core_tags %}
+{% load static core_tags %}
 
 {% block title %}Calculadora de Perdidas - Mastitrack{% endblock %}
 
@@ -59,6 +59,23 @@
 }
 .desglose-reaccion .desglose-total td {
     color: var(--mt-primary);
+}
+#banner-roi {
+    position: relative;
+    overflow: hidden;
+}
+#banner-roi::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('{% static "img/mastitrack_logo_gris.png" %}');
+    background-size: 24px;
+    background-repeat: repeat;
+    opacity: 0.04;
+    pointer-events: none;
 }
 </style>
 {% endblock %}

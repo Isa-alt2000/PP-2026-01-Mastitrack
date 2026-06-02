@@ -1,9 +1,22 @@
 {% extends "base.html" %}
-{% load core_tags %}
+{% load static core_tags %}
 
 {% block title %}Dashboard - Mastitrack{% endblock %}
 
 {% block content %}
+<div class="dashboard-banner mb-4">
+    <div class="banner-logo-section">
+        <img src="{% static 'img/banner_dashboard.png' %}" alt="" class="banner-bg-img">
+        <img src="{% static 'img/mastitrack_logo.png' %}" alt="Mastitrack" class="banner-logo">
+    </div>
+    <div class="banner-welcome-section">
+        <div class="banner-pattern" style="background-image: url('{% static 'img/mastitrack_logo_gris.png' %}')"></div>
+        <h1 class="banner-title">Mastitrack</h1>
+        <hr class="banner-title-divider">
+        <p class="banner-subtitle">{{ mensaje_bienvenida }}, {{ user.first_name|default:user.username }}</p>
+    </div>
+</div>
+
 <h2 class="mb-4">Panel General</h2>
 
 <div class="row mb-4">
@@ -46,7 +59,7 @@
     <div class="card-header bg-mt-primary-soft">
         <h5 class="mb-0 text-mt-primary">Mastitis Confirmada</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body dashboard-section-pattern">
         <div class="row">
             {% for vaca in vacas_confirmadas %}
             <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
@@ -72,7 +85,7 @@
     <div class="card-header bg-mt-gold-soft">
         <h5 class="mb-0 text-mt-gold">Sospecha de Mastitis</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body dashboard-section-pattern">
         <div class="row">
             {% for vaca in vacas_sospecha %}
             <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
@@ -126,4 +139,26 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.dashboard-section-pattern {
+    position: relative;
+    overflow: hidden;
+}
+.dashboard-section-pattern::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('{% static "img/mastitrack_logo_gris.png" %}');
+    background-size: 24px;
+    background-repeat: repeat;
+    opacity: 0.04;
+    pointer-events: none;
+}
+</style>
 {% endblock %}

@@ -97,6 +97,7 @@
 {% for lote_nombre, lote_vacas in vacas_por_lote.items %}
 <div class="lote-container mb-4">
     <div class="lote-container-header">
+        <div class="lote-header-pattern" style="background-image: url('{% static 'img/mastitrack_logo_gris.png' %}')"></div>
         <span class="lote-container-title">{{ lote_nombre }}</span>
         <span class="lote-container-count">{{ lote_vacas|length }} vaca{{ lote_vacas|length|pluralize:"s" }}</span>
     </div>
@@ -185,6 +186,21 @@
     padding: 12px 20px;
     background-color: var(--mt-green-dark);
     color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+.lote-header-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 75%;
+    height: 100%;
+    background-size: 24px;
+    background-repeat: repeat;
+    opacity: 0.06;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
+    mask-image: linear-gradient(to right, transparent, black 40%);
 }
 .lote-container-title {
     font-weight: 700;
@@ -274,6 +290,25 @@
     background-color: #e9e9e9;
     border-left: 4px solid #888;
     opacity: 0.75;
+}
+.vaca-item.card,
+.vaca-card {
+    position: relative;
+    overflow: hidden;
+}
+.vaca-item.card::before,
+.vaca-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('{% static "img/mastitrack_logo_gris.png" %}');
+    background-size: 24px;
+    background-repeat: repeat;
+    opacity: 0.04;
+    pointer-events: none;
 }
 .vaca-card-overlay-inactiva {
     display: flex;

@@ -14,6 +14,7 @@
     {% if user.is_authenticated %}
     {% include "sidebar.html" %}
     <div class="mobile-topbar">
+        <div class="mobile-topbar-pattern" style="background-image: url('{% static 'img/mastitrack_logo_gris.png' %}')"></div>
         <button class="mobile-topbar-toggle" onclick="document.getElementById('sidebar').classList.toggle('mobile-open'); document.getElementById('sidebar-overlay').classList.toggle('show');">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="3" y1="6" x2="21" y2="6"></line>
